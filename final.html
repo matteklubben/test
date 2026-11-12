@@ -3,105 +3,103 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Valvet Upplåst</title>
+  <title>Valvet är Öppet!</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    .final-code-box {
+    .final-video-box {
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(212, 175, 55, 0.45);
+      margin: 14px 0 18px;
+      background: #000;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+    }
+    .final-video-box video {
+      width: 100%;
+      display: block;
+      max-height: 48vh;
+      object-fit: cover;
+    }
+    .code-display {
       display: flex;
       justify-content: center;
-      gap: 14px;
-      margin: 24px 0;
+      gap: 10px;
+      margin: 18px 0;
     }
-    .final-digit {
-      width: 78px;
-      height: 96px;
-      background: linear-gradient(180deg, #2b121d 0%, #12060a 100%);
-      border: 3px solid var(--gold);
-      border-radius: 16px;
+    .code-digit {
+      width: 56px;
+      height: 68px;
+      background: #13060a;
+      border: 2px solid var(--gold);
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 3.5rem;
-      font-weight: 900;
+      font-size: 2rem;
+      font-weight: bold;
       color: var(--gold-light);
-      box-shadow: 0 0 28px rgba(212, 175, 55, 0.45);
+      box-shadow: 0 0 16px rgba(212, 175, 55, 0.25);
     }
-    canvas#confetti {
-      position: fixed;
-      top: 0;
-      left: 0;
+    .btn-reset-final {
+      margin-top: 22px;
+      background: transparent;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      color: var(--gold-light);
+      font-size: 0.85rem;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
       width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 100;
     }
   </style>
 </head>
 <body>
-  <canvas id="confetti"></canvas>
-
   <div class="container">
     <div id="hud" class="hud-bar"></div>
 
-    <div class="card" style="text-align:center;">
-      <h1>🥂 Uppdraget Slutfört</h1>
-      <p>Samtliga säkerhetsnivåer har forcerats. Koden till trälådans hänglås är:</p>
+    <div class="card" style="text-align: center;">
+      <h2>Uppdraget Slutfört!</h2>
+      <p class="muted">Ni har löst alla vinkällarens gåtor. Använd koden nedan för att öppna det fysiska hänglåset:</p>
 
-      <div class="final-code-box">
-        <div class="final-digit" id="fd1">-</div>
-        <div class="final-digit" id="fd2">-</div>
-        <div class="final-digit" id="fd3">-</div>
+      <div class="final-video-box">
+        <video id="openVideo" src="open.mp4" autoplay muted loop playsinline controls></video>
       </div>
 
-      <p style="color:var(--gold-light); font-weight:700; font-size:1.1rem;">Skål! 🍷</p>
+      <div id="codeBox" class="code-display"></div>
 
-      <button class="btn btn-secondary" style="margin-top:18px;" onclick="restartAll()">↺ Nollställ och börja om</button>
+      <button class="btn-reset-final" onclick="restartAll()">↺ Nollställ och spela igen</button>
     </div>
   </div>
 
   <script src="config.js"></script>
   <script>
-    saveProgress("final.html", 3);
-    renderHUD("UPPLÅST", 3);
+    try { saveProgress("final.html", 3); } catch (e) {}
+    try { renderHUD("Slutfört • 3/3", 3); } catch (e) {}
 
-    document.getElementById("fd1").textContent = VAULT_CONFIG.digit1;
-    document.getElementById("fd2").textContent = VAULT_CONFIG.digit2;
-    document.getElementById("fd3").textContent = VAULT_CONFIG.digit3;
+    const lockCode = (typeof GAME_CONFIG !== "undefined" && GAME_CONFIG.finalLockCode)
+      ? String(GAME_CONFIG.finalLockCode)
+      : "1842";
+
+    const codeBox = document.getElementById("codeBox");
+    codeBox.innerHTML = "";
+    for (const ch of lockCode) {
+      const div = document.createElement("div");
+      div.className = "code-digit";
+      div.textContent = ch;
+      codeBox.appendChild(div);
+    }
 
     function restartAll() {
-      resetProgress();
+      try {
+        if (typeof resetProgress === "function") {
+          resetProgress();
+        } else {
+          localStorage.removeItem("vinkallaren_escape_progress_v3");
+        }
+      } catch (e) {}
       window.location.href = "index.html";
     }
-
-    const canvas = document.getElementById("confetti");
-    const ctx = canvas.getContext("2d");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    const colors = ["#d4af37", "#f3d778", "#9e1b3b", "#ffffff", "#ff6b8b"];
-    const pieces = Array.from({ length: 95 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height - canvas.height,
-      r: Math.random() * 6 + 4,
-      d: Math.random() * 3 + 2,
-      color: colors[Math.floor(Math.random() * colors.length)]
-    }));
-
-    function drawConfetti() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      pieces.forEach(p => {
-        ctx.fillStyle = p.color;
-        ctx.fillRect(p.x, p.y, p.r, p.r * 1.4);
-        p.y += p.d;
-        p.x += Math.sin(p.y * 0.03) * 1.2;
-        if (p.y > canvas.height) {
-          p.y = -10;
-          p.x = Math.random() * canvas.width;
-        }
-      });
-      requestAnimationFrame(drawConfetti);
-    }
-    drawConfetti();
   </script>
 </body>
 </html>
