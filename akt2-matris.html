@@ -60,7 +60,7 @@
 
       <ul class="clue-list">
         <li><strong>1.</strong> Flaskan från <strong>Frankrike</strong> ligger direkt ovanför flaskan som kostar <strong>450 kr</strong>.</li>
-        <li><strong>2.</strong> Vinet från årgång <strong>1998</strong> ligger på <strong>Hylla 1</strong> och kommer inte från Spanien.</li>
+        <li><strong>2.</strong> Vinet från årgång <strong>1998</strong> ligger på <strong>Hylla 1</strong>.</li>
         <li><strong>3.</strong> Flaskan som kostar <strong>1 200 kr</strong> är från <strong>Italien</strong> och ligger högst upp (Hylla 4).</li>
         <li><strong>4.</strong> Flaskan från <strong>Tyskland</strong> är från <strong>2005</strong> och kostar <strong>600 kr</strong>.</li>
         <li><strong>5.</strong> Flaskan från <strong>1992</strong> kostar <strong>850 kr</strong> (den fjärde årgången är <strong>2011</strong>).</li>
@@ -206,18 +206,18 @@
 
   <script src="config.js"></script>
   <script>
-    saveProgress("akt2-matris.html", 1);
-    renderHUD("Akt 2 • 2/3", 1);
+    try { saveProgress("akt2-matris.html", 1); } catch (e) {}
+    try { renderHUD("Akt 2 • 2/3", 1); } catch (e) {}
 
-    // Unik lösning:
-    // Hylla 4: Italien, 2011, 1200
-    // Hylla 3: Frankrike, 1992, 850
-    // Hylla 2: Tyskland, 2005, 600
-    // Hylla 1: Spanien, 1998, 450
+    // Verifierad och unik lösning:
+    // Hylla 4: Italien, 2011, 1200 kr
+    // Hylla 3: Tyskland, 2005, 600 kr
+    // Hylla 2: Frankrike, 1992, 850 kr
+    // Hylla 1: Spanien, 1998, 450 kr
     const SOLUTION = {
       "h4-land": "Italien",   "h4-year": "2011", "h4-price": "1200",
-      "h3-land": "Frankrike", "h3-year": "1992", "h3-price": "850",
-      "h2-land": "Tyskland",  "h2-year": "2005", "h2-price": "600",
+      "h3-land": "Tyskland",  "h3-year": "2005", "h3-price": "600",
+      "h2-land": "Frankrike", "h2-year": "1992", "h2-price": "850",
       "h1-land": "Spanien",   "h1-year": "1998", "h1-price": "450"
     };
 
@@ -237,7 +237,7 @@
       if (allCorrect) {
         fb.className = "feedback success";
         fb.textContent = "Hela logikmatrisen stämmer!";
-        saveProgress("akt2-loggbok.html", 1);
+        try { saveProgress("akt2-loggbok.html", 1); } catch (e) {}
         setTimeout(() => {
           window.location.href = "akt2-loggbok.html";
         }, 800);
