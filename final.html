@@ -6,8 +6,26 @@
   <title>Valvet är Öppet!</title>
   <link rel="stylesheet" href="style.css" />
   <style>
+    .big-reveal-btn {
+      width: 100%;
+      padding: 26px 18px;
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      line-height: 1.4;
+      background: linear-gradient(135deg, #2b131d 0%, #14070c 100%);
+      color: var(--gold-light, #f3d778);
+      border: 2px solid var(--gold, #d4af37);
+      border-radius: 16px;
+      cursor: pointer;
+      box-shadow: 0 0 28px rgba(212, 175, 55, 0.3);
+      transition: transform 0.15s, box-shadow 0.2s;
+      margin: 12px 0;
+    }
+    .big-reveal-btn:active {
+      transform: scale(0.97);
+    }
     .final-video-box {
-      position: relative;
       width: 100%;
       border-radius: 12px;
       overflow: hidden;
@@ -22,39 +40,25 @@
       max-height: 48vh;
       object-fit: cover;
     }
-    .unmute-overlay {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(19, 6, 10, 0.88);
-      border: 1px solid var(--gold, #d4af37);
-      color: var(--gold-light, #e6c86e);
-      font-size: 0.82rem;
-      font-weight: bold;
-      padding: 7px 12px;
-      border-radius: 999px;
-      cursor: pointer;
-      z-index: 10;
-    }
     .code-display {
       display: flex;
       justify-content: center;
-      gap: 10px;
+      gap: 12px;
       margin: 18px 0;
     }
     .code-digit {
-      width: 56px;
-      height: 68px;
+      width: 68px;
+      height: 82px;
       background: #13060a;
       border: 2px solid var(--gold);
-      border-radius: 10px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
-      font-weight: bold;
+      font-size: 2.6rem;
+      font-weight: 900;
       color: var(--gold-light);
-      box-shadow: 0 0 16px rgba(212, 175, 55, 0.25);
+      box-shadow: 0 0 18px rgba(212, 175, 55, 0.3);
     }
     .btn-reset-final {
       margin-top: 22px;
@@ -67,19 +71,37 @@
       cursor: pointer;
       width: 100%;
     }
+    canvas#confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
+    }
   </style>
 </head>
 <body>
+  <canvas id="confetti"></canvas>
+
   <div class="container">
     <div id="hud" class="hud-bar"></div>
 
-    <div class="card" style="text-align: center;">
-      <h2>Uppdraget Slutfört!</h2>
-      <p class="muted">Ni har löst alla vinkällarens gåtor. Använd koden nedan för att öppna det fysiska hänglåset:</p>
+    <!-- Steg 1: Stor knapp som låser upp ljudet i alla mobiler -->
+    <div id="preRevealCard" class="card" style="text-align: center;">
+      <button id="revealBtn" class="big-reveal-btn" onclick="revealFinale()">
+        Grattis! Klicka här för att se koden.
+      </button>
+    </div>
+
+    <!-- Steg 2: Filmen (med ljud på) och koden visas vid klick -->
+    <div id="finaleCard" class="card" style="text-align: center; display: none;">
+      <h2>🥂 Uppdraget Slutfört!</h2>
+      <p class="muted">Ni har löst alla vinkällarens gåtor. Använd koden nedan för att öppna trälådans hänglås:</p>
 
       <div class="final-video-box">
-        <video id="openVideo" src="open.mp4" autoplay loop playsinline controls></video>
-        <button id="soundBtn" class="unmute-overlay" style="display: none;" onclick="enableSound()">🔊 Slå på ljud</button>
+        <video id="openVideo" src="open.mp4" playsinline controls></video>
       </div>
 
       <div id="codeBox" class="code-display"></div>
@@ -90,48 +112,63 @@
 
   <script src="config.js"></script>
   <script>
-    const video = document.getElementById("openVideo");
-    const soundBtn = document.getElementById("soundBtn");
-
-    video.muted = false;
-    const playPromise = video.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        video.muted = true;
-        video.play();
-        soundBtn.style.display = "block";
-      });
-    }
-
-    function enableSound() {
-      video.muted = false;
-      video.play();
-      soundBtn.style.display = "none";
-    }
-
-    document.addEventListener("pointerdown", function unlockAudio() {
-      if (video.muted) {
-        video.muted = false;
-        video.play();
-        soundBtn.style.display = "none";
-      }
-      document.removeEventListener("pointerdown", unlockAudio);
-    }, { once: true });
-
     try { saveProgress("final.html", 3); } catch (e) {}
-    try { renderHUD("Slutfört • 3/3", 3); } catch (e) {}
+    try { renderHUD("UPPLÅST • 3/3", 3); } catch (e) {}
 
-    const lockCode = (typeof GAME_CONFIG !== "undefined" && GAME_CONFIG.finalLockCode)
-      ? String(GAME_CONFIG.finalLockCode)
-      : "1842";
+    // Hämta er 3-siffriga kod oavsett hur den är döpt i config.js
+    function resolveThreeDigitCode() {
+      // 1. Om VAULT_CONFIG finns (digit1, digit2, digit3 eller code/lockCode)
+      if (typeof VAULT_CONFIG !== "undefined" && VAULT_CONFIG) {
+        if (VAULT_CONFIG.digit1 !== undefined && VAULT_CONFIG.digit2 !== undefined && VAULT_CONFIG.digit3 !== undefined) {
+          return [VAULT_CONFIG.digit1, VAULT_CONFIG.digit2, VAULT_CONFIG.digit3];
+        }
+        const vCode = VAULT_CONFIG.code || VAULT_CONFIG.lockCode || VAULT_CONFIG.finalLockCode || VAULT_CONFIG.pin;
+        if (vCode !== undefined) {
+          return String(vCode).replace(/\D/g, "").slice(0, 3).split("");
+        }
+      }
 
+      // 2. Om GAME_CONFIG finns (t.ex. finalLockCode, lockCode, code, pin eller digits)
+      if (typeof GAME_CONFIG !== "undefined" && GAME_CONFIG) {
+        if (Array.isArray(GAME_CONFIG.digits) && GAME_CONFIG.digits.length >= 3) {
+          return GAME_CONFIG.digits.slice(0, 3);
+        }
+        if (GAME_CONFIG.digit1 !== undefined && GAME_CONFIG.digit2 !== undefined && GAME_CONFIG.digit3 !== undefined) {
+          return [GAME_CONFIG.digit1, GAME_CONFIG.digit2, GAME_CONFIG.digit3];
+        }
+        const gCode = GAME_CONFIG.finalLockCode || GAME_CONFIG.lockCode || GAME_CONFIG.code || GAME_CONFIG.pin || GAME_CONFIG.vaultCode;
+        if (gCode !== undefined) {
+          return String(gCode).replace(/\D/g, "").slice(0, 3).split("");
+        }
+      }
+
+      // 3. Om en fristående konstant som LOCK_CODE eller FINAL_CODE används
+      if (typeof LOCK_CODE !== "undefined") return String(LOCK_CODE).replace(/\D/g, "").slice(0, 3).split("");
+      if (typeof FINAL_CODE !== "undefined") return String(FINAL_CODE).replace(/\D/g, "").slice(0, 3).split("");
+
+      // Fallback om inget hittas i config.js
+      return ["7", "4", "9"];
+    }
+
+    const digits = resolveThreeDigitCode();
     const codeBox = document.getElementById("codeBox");
     codeBox.innerHTML = "";
-    for (const ch of lockCode) {
+    for (const ch of digits) {
       const div = document.createElement("div");
       div.className = "code-digit";
       div.textContent = ch;
       codeBox.appendChild(div);
+    }
+
+    function revealFinale() {
+      document.getElementById("preRevealCard").style.display = "none";
+      document.getElementById("finaleCard").style.display = "block";
+
+      const video = document.getElementById("openVideo");
+      video.muted = false;
+      video.play();
+
+      startConfetti();
     }
 
     function restartAll() {
@@ -143,6 +180,38 @@
         }
       } catch (e) {}
       window.location.href = "index.html";
+    }
+
+    function startConfetti() {
+      const canvas = document.getElementById("confetti");
+      const ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const colors = ["#d4af37", "#f3d778", "#9e1b3b", "#ffffff", "#ff6b8b"];
+      const pieces = Array.from({ length: 95 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        r: Math.random() * 6 + 4,
+        d: Math.random() * 3 + 2,
+        color: colors[Math.floor(Math.random() * colors.length)]
+      }));
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach(p => {
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x, p.y, p.r, p.r * 1.4);
+          p.y += p.d;
+          p.x += Math.sin(p.y * 0.03) * 1.2;
+          if (p.y > canvas.height) {
+            p.y = -10;
+            p.x = Math.random() * canvas.width;
+          }
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
     }
   </script>
 </body>
