@@ -19,25 +19,43 @@
     .start-wrapper {
       width: 100%;
       max-width: 520px;
-      padding: 16px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: 18px;
       box-sizing: border-box;
+    }
+    .big-start-btn {
+      width: 100%;
+      padding: 26px 20px;
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #2b131d 0%, #14070c 100%);
+      color: var(--gold-light, #e6c86e);
+      border: 2px solid var(--gold, #d4af37);
+      border-radius: 16px;
+      cursor: pointer;
+      box-shadow: 0 0 28px rgba(212, 175, 55, 0.28);
+      transition: transform 0.15s, box-shadow 0.2s;
+    }
+    .big-start-btn:active {
+      transform: scale(0.97);
     }
     .video-box {
       width: 100%;
       border-radius: 14px;
       overflow: hidden;
-      border: 1px solid rgba(212, 175, 55, 0.35);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.75);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.8);
       background: #000;
     }
     .video-box video {
       width: 100%;
       display: block;
-      max-height: 72vh;
+      max-height: 70vh;
       object-fit: cover;
     }
     .btn-reset-small {
@@ -50,21 +68,20 @@
       cursor: pointer;
       width: auto;
       opacity: 0.85;
-      transition: opacity 0.2s, border-color 0.2s;
-    }
-    .btn-reset-small:hover {
-      opacity: 1;
-      border-color: var(--gold, #d4af37);
     }
   </style>
 </head>
 <body>
   <div class="start-wrapper">
-    <div class="video-box">
-      <video id="introVideo" src="intro.mp4" autoplay muted loop playsinline controls></video>
+    <!-- Steg 1: Stor STARTA-knapp som låser upp ljudet i alla mobiler -->
+    <button id="bigStartBtn" class="big-start-btn" onclick="launchIntro()">▶ STARTA</button>
+
+    <!-- Steg 2: Filmen och knapparna som visas direkt vid klick -->
+    <div id="videoContainer" class="video-box" style="display: none;">
+      <video id="introVideo" src="intro.mp4" playsinline controls></video>
     </div>
 
-    <button id="mainActionBtn" class="btn" onclick="startOrContinue()">Starta äventyret →</button>
+    <button id="mainActionBtn" class="btn" style="display: none;" onclick="startOrContinue()">Starta äventyret →</button>
     <button id="resetBtn" class="btn-reset-small" style="display: none;" onclick="resetGame()">Starta från början</button>
   </div>
 
@@ -83,15 +100,29 @@
       }
     } catch (e) {}
 
+    const bigStartBtn = document.getElementById("bigStartBtn");
+    const videoContainer = document.getElementById("videoContainer");
+    const introVideo = document.getElementById("introVideo");
     const mainBtn = document.getElementById("mainActionBtn");
     const resetBtn = document.getElementById("resetBtn");
 
+    // Om spelaren redan kommit en bit i äventyret hoppar vi förbi STARTA-steget och visar Fortsätt direkt
     if (savedPage) {
+      bigStartBtn.style.display = "none";
+      videoContainer.style.display = "block";
+      mainBtn.style.display = "block";
       mainBtn.textContent = "Fortsätt äventyret →";
       resetBtn.style.display = "inline-block";
-    } else {
+    }
+
+    function launchIntro() {
+      bigStartBtn.style.display = "none";
+      videoContainer.style.display = "block";
+      mainBtn.style.display = "block";
       mainBtn.textContent = "Starta äventyret →";
-      resetBtn.style.display = "none";
+
+      introVideo.muted = false;
+      introVideo.play();
     }
 
     function startOrContinue() {
@@ -112,8 +143,12 @@
         }
       } catch (e) {}
       savedPage = null;
-      mainBtn.textContent = "Starta äventyret →";
+      videoContainer.style.display = "none";
+      introVideo.pause();
+      introVideo.currentTime = 0;
+      mainBtn.style.display = "none";
       resetBtn.style.display = "none";
+      bigStartBtn.style.display = "block";
     }
   </script>
 </body>
