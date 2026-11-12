@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Akt 2 - Källarmästarens Loggbok</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .note-paper {
+      background: #efe3c8;
+      color: #261811;
+      padding: 15px;
+      border-radius: 10px;
+      font-family: Georgia, serif;
+      font-style: italic;
+      border-left: 5px solid #7a1c36;
+      margin-bottom: 14px;
+      box-shadow: inset 0 0 14px rgba(0,0,0,0.15);
+    }
+    .note-paper p {
+      color: #261811;
+      margin-bottom: 0;
+      font-size: 0.94rem;
+    }
+    .label-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .label-card {
+      background: var(--bg-card-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      text-align: left;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: transform 0.1s, border-color 0.15s;
+    }
+    .label-card:active {
+      transform: scale(0.98);
+      border-color: var(--gold);
+    }
+    .label-top {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 800;
+      color: var(--gold-light);
+      font-size: 0.98rem;
+    }
+    .label-sub {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="hud" class="hud-bar"></div>
+
+    <div class="card" id="logCard">
+      <h2 id="roundTitle">Akt 2 • Loggboken (1/2)</h2>
+
+      <div class="note-paper">
+        <p id="noteText"></p>
+      </div>
+
+      <div id="labelGrid" class="label-grid"></div>
+      <div id="feedback" class="feedback"></div>
+    </div>
+
+    <div class="card" id="rewardCard" style="display:none;">
+      <div class="digit-reveal">
+        <p style="margin:0; color:var(--gold); font-weight:700;">AKT 2 SLUTFÖRD</p>
+        <div class="digit-big" id="revealedDigit"></div>
+        <p style="margin:0;">Andra siffran är upplåst.</p>
+      </div>
+      <a href="akt3-dimma.html" class="btn btn-gold">Fortsätt till Akt 3 →</a>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    renderHUD("Akt 2 • 3/3", 1);
+
+    const ROUNDS = [
+      {
+        title: "Akt 2 • Loggboken (1/2)",
+        note: "”Den första nyckeln gömdes bakom flaskan som skördades samma sommar som människan tog sina första steg på månen. Druvorna växte i den svarta askan på sluttningen av en aktiv vulkan i Medelhavet.”",
+        options: [
+          { name: "Château Margaux", year: "1969", meta: "Bordeaux, Frankrike • Cabernet Sauvignon • 13.0%", correct: false },
+          { name: "Etna Rosso Riserva", year: "1969", meta: "Sicilien, Italien • Nerello Mascalese • 13.5%", correct: true },
+          { name: "Etna Rosso Riserva", year: "1971", meta: "Sicilien, Italien • Nerello Mascalese • 13.5%", correct: false },
+          { name: "Taurasi Riserva", year: "1969", meta: "Kampanien, Italien • Aglianico • 14.0%", correct: false },
+          { name: "Barolo Monfortino", year: "1969", meta: "Piemonte, Italien • Nebbiolo • 14.0%", correct: false }
+        ]
+      },
+      {
+        title: "Akt 2 • Loggboken (2/2)",
+        note: "”Den andra delen av koden fästes vid en gyllene årgång från det år då Berlinmuren föll. Vinet kommer från världens nordligaste klassiska vinregion för mousserande vin och håller exakt 12,5 % alkohol.”",
+        options: [
+          { name: "Dom Pérignon Vintage", year: "1989", meta: "Champagne, Frankrike • Chardonnay/Pinot Noir • 12.5%", correct: true },
+          { name: "Dom Pérignon Vintage", year: "1989", meta: "Champagne, Frankrike • Chardonnay/Pinot Noir • 13.0%", correct: false },
+          { name: "Krug Grande Cuvée", year: "1991", meta: "Champagne, Frankrike • Pinot Noir • 12.5%", correct: false },
+          { name: "Franciacorta Satèn", year: "1989", meta: "Lombardiet, Italien • Chardonnay • 12.5%", correct: false },
+          { name: "Riesling Auslese", year: "1989", meta: "Mosel, Tyskland • Riesling • 8.5%", correct: false }
+        ]
+      }
+    ];
+
+    let currentRound = 0;
+
+    function renderRound() {
+      const data = ROUNDS[currentRound];
+      document.getElementById("roundTitle").textContent = data.title;
+      document.getElementById("noteText").textContent = data.note;
+      document.getElementById("feedback").style.display = "none";
+
+      const grid = document.getElementById("labelGrid");
+      grid.innerHTML = "";
+      data.options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "label-card";
+        btn.innerHTML = `
+          <div class="label-top"><span>${opt.name}</span><span>${opt.year}</span></div>
+          <div class="label-sub">${opt.meta}</div>
+        `;
+        btn.onclick = () => handlePick(opt.correct);
+        grid.appendChild(btn);
+      });
+    }
+
+    function handlePick(isCorrect) {
+      const fb = document.getElementById("feedback");
+      if (isCorrect) {
+        if (currentRound === 0) {
+          fb.className = "feedback success";
+          fb.textContent = "Rätt etikett. En dold sida i loggboken öppnas...";
+          setTimeout(() => {
+            currentRound = 1;
+            renderRound();
+          }, 900);
+        } else {
+          document.getElementById("logCard").style.display = "none";
+          document.getElementById("rewardCard").style.display = "block";
+          document.getElementById("revealedDigit").textContent = VAULT_CONFIG.digit2;
+          renderHUD("Akt 2 Klar", 2);
+        }
+      } else {
+        fb.className = "feedback error";
+        fb.textContent = "Fel flaska. Granska varje detalj i anteckningen.";
+      }
+    }
+
+    renderRound();
+  </script>
+</body>
+</html>

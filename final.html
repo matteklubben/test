@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Valvet Upplåst</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .final-code-box {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin: 24px 0;
+    }
+    .final-digit {
+      width: 78px;
+      height: 96px;
+      background: linear-gradient(180deg, #2b121d 0%, #12060a 100%);
+      border: 3px solid var(--gold);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      font-weight: 900;
+      color: var(--gold-light);
+      box-shadow: 0 0 28px rgba(212, 175, 55, 0.45);
+    }
+    canvas#confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confetti"></canvas>
+
+  <div class="container">
+    <div id="hud" class="hud-bar"></div>
+
+    <div class="card" style="text-align:center;">
+      <h1>🥂 Uppdraget Slutfört</h1>
+      <p>Samtliga säkerhetsnivåer har forcerats. Koden till trälådans hänglås är:</p>
+
+      <div class="final-code-box">
+        <div class="final-digit" id="fd1">-</div>
+        <div class="final-digit" id="fd2">-</div>
+        <div class="final-digit" id="fd3">-</div>
+      </div>
+
+      <p style="color:var(--gold-light); font-weight:700; font-size:1.1rem;">Skål! 🍷</p>
+
+      <a href="index.html" class="btn btn-secondary" style="margin-top:18px;">↺ Starta om från början</a>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    renderHUD("UPPLÅST", 3);
+
+    document.getElementById("fd1").textContent = VAULT_CONFIG.digit1;
+    document.getElementById("fd2").textContent = VAULT_CONFIG.digit2;
+    document.getElementById("fd3").textContent = VAULT_CONFIG.digit3;
+
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = ["#d4af37", "#f3d778", "#9e1b3b", "#ffffff", "#ff6b8b"];
+    const pieces = Array.from({ length: 95 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      r: Math.random() * 6 + 4,
+      d: Math.random() * 3 + 2,
+      color: colors[Math.floor(Math.random() * colors.length)]
+    }));
+
+    function drawConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      pieces.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.r, p.r * 1.4);
+        p.y += p.d;
+        p.x += Math.sin(p.y * 0.03) * 1.2;
+        if (p.y > canvas.height) {
+          p.y = -10;
+          p.x = Math.random() * canvas.width;
+        }
+      });
+      requestAnimationFrame(drawConfetti);
+    }
+    drawConfetti();
+  </script>
+</body>
+</html>

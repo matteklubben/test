@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Akt 3 - Sändning</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      max-width: 270px;
+      margin: 16px auto;
+    }
+    .key-btn {
+      aspect-ratio: 1.25 / 1;
+      border-radius: 14px;
+      background: #16090e;
+      border: 2px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-main);
+      transition: background 0.06s, border-color 0.06s, box-shadow 0.06s, transform 0.06s;
+      user-select: none;
+    }
+    .key-num {
+      font-size: 1.45rem;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .key-btn.lit {
+      background: var(--gold);
+      border-color: #fff;
+      color: #12090d;
+      box-shadow: 0 0 24px rgba(243, 215, 120, 0.85);
+      transform: scale(1.06);
+    }
+    .seq-display {
+      background: #100509;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin: 12px 0;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      text-align: center;
+      line-height: 1.7;
+      letter-spacing: 0.05em;
+    }
+    .seq-token {
+      display: inline-block;
+      padding: 2px 5px;
+      border-radius: 5px;
+      margin: 1px 2px;
+      transition: background 0.08s, color 0.08s;
+    }
+    .seq-token.active {
+      background: var(--gold);
+      color: #12090d;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="hud" class="hud-bar"></div>
+
+    <div class="card" id="puzzleCard">
+      <h2>Akt 3 • Slutkod</h2>
+      <p class="muted" style="text-align:center;">Slå på ljudet på mobilen.</p>
+
+      <div class="keypad-grid">
+        <div class="key-btn" id="k1"><span class="key-num">1</span></div>
+        <div class="key-btn" id="k2"><span class="key-num">2</span></div>
+        <div class="key-btn" id="k3"><span class="key-num">3</span></div>
+        <div class="key-btn" id="k4"><span class="key-num">4</span></div>
+        <div class="key-btn" id="k5"><span class="key-num">5</span></div>
+        <div class="key-btn" id="k6"><span class="key-num">6</span></div>
+        <div class="key-btn" id="k7"><span class="key-num">7</span></div>
+        <div class="key-btn" id="k8"><span class="key-num">8</span></div>
+        <div class="key-btn" id="k9"><span class="key-num">9</span></div>
+        <div class="key-btn" id="kstar"><span class="key-num">*</span></div>
+        <div class="key-btn" id="k0"><span class="key-num">0</span></div>
+        <div class="key-btn" id="khash"><span class="key-num">#</span></div>
+      </div>
+
+      <div class="seq-display" id="seqDisplay"></div>
+
+      <button class="btn btn-secondary" id="playBtn" onclick="playSequence()" style="margin-bottom:14px;">▶ Spela upp knapptryckningar</button>
+
+      <input type="text" id="phoneInput" placeholder="ORD..." autocomplete="off" />
+      <button class="btn" onclick="checkPhone()">Lås upp sista siffran →</button>
+      <div id="feedback" class="feedback"></div>
+    </div>
+
+    <div class="card" id="rewardCard" style="display:none;">
+      <div class="digit-reveal">
+        <p style="margin:0; color:var(--gold); font-weight:700;">AKT 3 SLUTFÖRD</p>
+        <div class="digit-big" id="revealedDigit"></div>
+        <p style="margin:0;">Tredje och sista siffran är upplåst.</p>
+      </div>
+      <a href="final.html" class="btn btn-gold">Visa hela koden →</a>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    renderHUD("Akt 3 • 3/3", 2);
+
+    // Standard mobilknappsats (2=ABC, 3=DEF, 4=GHI, 5=JKL, 6=MNO, 7=PQRS, 8=TUV, 9=WXYZ)
+    // Ordet: JULGRANSGLITTER
+    // J = 5
+    // U = 88
+    // L = 555
+    // G = 4
+    // R = 777
+    // A = 2
+    // N = 66
+    // S = 7777
+    // G = 4
+    // L = 555
+    // I = 444
+    // T = 8
+    // T = 8
+    // E = 33
+    // R = 777
+    const TOKENS = [
+      "5", "88", "555", "4", "777", "2", "66", "7777",
+      "4", "555", "444", "8", "8", "33", "777"
+    ];
+
+    // Äkta DTMF-frekvenser [låg Hz, hög Hz] för varje knapp
+    const DTMF_FREQS = {
+      "1": [697, 1209], "2": [697, 1336], "3": [697, 1477],
+      "4": [770, 1209], "5": [770, 1336], "6": [770, 1477],
+      "7": [852, 1209], "8": [852, 1336], "9": [852, 1477],
+      "*": [941, 1209], "0": [941, 1336], "#": [941, 1477]
+    };
+
+    const seqDisplay = document.getElementById("seqDisplay");
+    TOKENS.forEach((tok, idx) => {
+      const span = document.createElement("span");
+      span.className = "seq-token";
+      span.id = "tok" + idx;
+      span.textContent = tok;
+      seqDisplay.appendChild(span);
+      if (idx < TOKENS.length - 1) {
+        seqDisplay.appendChild(document.createTextNode(" - "));
+      }
+    });
+
+    let audioCtx = null;
+    let isPlaying = false;
+
+    function playDTMF(digit, durationMs) {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+      const [f1, f2] = DTMF_FREQS[digit] || [770, 1336];
+      const now = audioCtx.currentTime;
+
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc1.type = "sine";
+      osc2.type = "sine";
+      osc1.frequency.value = f1;
+      osc2.frequency.value = f2;
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.exponentialRampToValueAtTime(0.22, now + 0.008);
+      gain.gain.setValueAtTime(0.22, now + (durationMs / 1000) - 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + (durationMs / 1000));
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + durationMs / 1000);
+      osc2.stop(now + durationMs / 1000);
+    }
+
+    async function playSequence() {
+      if (isPlaying) return;
+      isPlaying = true;
+      const btn = document.getElementById("playBtn");
+      btn.disabled = true;
+
+      for (let i = 0; i < TOKENS.length; i++) {
+        const token = TOKENS[i];
+        const tokEl = document.getElementById("tok" + i);
+        tokEl.classList.add("active");
+
+        for (let p = 0; p < token.length; p++) {
+          const digit = token[p];
+          const keyEl = document.getElementById("k" + digit);
+          if (keyEl) keyEl.classList.add("lit");
+          playDTMF(digit, 130);
+          await new Promise(r => setTimeout(r, 130));
+          if (keyEl) keyEl.classList.remove("lit");
+          if (p < token.length - 1) {
+            await new Promise(r => setTimeout(r, 95));
+          }
+        }
+
+        tokEl.classList.remove("active");
+        if (i < TOKENS.length - 1) {
+          await new Promise(r => setTimeout(r, 420)); // tydlig paus mellan bokstäver
+        }
+      }
+
+      btn.disabled = false;
+      isPlaying = false;
+    }
+
+    function checkPhone() {
+      const val = document.getElementById("phoneInput").value.trim().toUpperCase();
+      const fb = document.getElementById("feedback");
+      if (val === "JULGRANSGLITTER") {
+        document.getElementById("puzzleCard").style.display = "none";
+        document.getElementById("rewardCard").style.display = "block";
+        document.getElementById("revealedDigit").textContent = VAULT_CONFIG.digit3;
+        renderHUD("Akt 3 Klar", 3);
+      } else {
+        fb.className = "feedback error";
+        fb.textContent = "Felaktigt ord.";
+      }
+    }
+
+    document.getElementById("phoneInput").addEventListener("keyup", (e) => {
+      if (e.key === "Enter") checkPhone();
+    });
+  </script>
+</body>
+</html>

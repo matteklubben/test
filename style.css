@@ -1,0 +1,314 @@
+/* =========================================================
+   VINKÄLLARENS SÄKERHETSVALV - MOBILOPTIMERAD DESIGN
+   ========================================================= */
+:root {
+  --bg-dark: #0e0609;
+  --bg-card: #1a0c12;
+  --bg-card-elevated: #26121b;
+  --wine-primary: #7a1c36;
+  --wine-hover: #962343;
+  --gold: #d4af37;
+  --gold-light: #f3d778;
+  --text-main: #f8f1f3;
+  --text-muted: #b89ea7;
+  --success: #2e8b57;
+  --error: #c93b3b;
+  --border: rgba(212, 175, 55, 0.28);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  min-height: 100vh;
+  background-color: var(--bg-dark);
+  background-image: radial-gradient(circle at 50% 0%, #2b101b 0%, #0e0609 80%);
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-size: 16px;
+}
+
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 14px 14px 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Topp-bar (HUD) */
+.hud-bar {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  position: sticky;
+  top: 8px;
+  z-index: 50;
+}
+
+.act-badge {
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  background: rgba(212, 175, 55, 0.12);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.code-slots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.code-slot {
+  width: 30px;
+  height: 34px;
+  border-radius: 6px;
+  background: #100509;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--text-muted);
+}
+
+.code-slot.unlocked {
+  background: rgba(212, 175, 55, 0.22);
+  border-color: var(--gold);
+  color: var(--gold-light);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+}
+
+/* Kort */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.55);
+}
+
+h1 {
+  font-size: 1.4rem;
+  color: var(--gold-light);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 1.12rem;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+p {
+  color: var(--text-main);
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.muted {
+  color: var(--text-muted);
+  font-size: 0.86rem;
+}
+
+.clue-box {
+  background: #11060a;
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  padding: 16px 12px;
+  margin: 14px 0;
+  text-align: center;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--gold-light);
+  letter-spacing: 0.06em;
+  word-break: break-word;
+}
+
+/* Inputs & Knappar */
+input[type="text"], input[type="number"] {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #0f0509;
+  color: #fff;
+  font-size: 1.08rem;
+  text-align: center;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.22);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--wine-primary), #4f0f21);
+  color: #fff;
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  transition: transform 0.1s ease;
+  touch-action: manipulation;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #d4af37, #a37d14);
+  color: #16080c;
+  border: none;
+}
+
+.btn-secondary {
+  background: var(--bg-card-elevated);
+  border: 1px solid var(--border);
+  color: var(--gold-light);
+  margin-top: 8px;
+}
+
+/* Feedback */
+.feedback {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  display: none;
+}
+
+.feedback.error {
+  display: block;
+  background: rgba(201, 59, 59, 0.2);
+  border: 1px solid var(--error);
+  color: #ff9c9c;
+}
+
+.feedback.success {
+  display: block;
+  background: rgba(46, 139, 87, 0.22);
+  border: 1px solid var(--success);
+  color: #8ce6b3;
+}
+
+/* Siffer-avslöjande */
+.digit-reveal {
+  text-align: center;
+  padding: 22px 14px;
+  background: radial-gradient(circle, rgba(212,175,55,0.22) 0%, rgba(16,6,10,0.95) 75%);
+  border: 2px solid var(--gold);
+  border-radius: 16px;
+  margin: 12px 0 16px;
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.digit-big {
+  font-size: 4.2rem;
+  font-weight: 900;
+  color: var(--gold-light);
+  text-shadow: 0 0 25px rgba(212, 175, 55, 0.65);
+  line-height: 1.1;
+  margin: 8px 0;
+}
+
+/* D-pad / Pilknappar för mobil */
+.dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 66px);
+  grid-template-rows: repeat(3, 60px);
+  gap: 8px;
+  justify-content: center;
+  margin: 16px auto 4px;
+  user-select: none;
+}
+
+.dpad-btn {
+  background: var(--bg-card-elevated);
+  border: 2px solid var(--gold);
+  border-radius: 14px;
+  color: var(--gold-light);
+  font-size: 1.55rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+  touch-action: manipulation;
+}
+
+.dpad-btn:active {
+  background: var(--gold);
+  color: #12090d;
+  transform: scale(0.93);
+}
+
+.dpad-up { grid-column: 2; grid-row: 1; }
+.dpad-left { grid-column: 1; grid-row: 2; }
+.dpad-center {
+  grid-column: 2;
+  grid-row: 2;
+  background: #14080d;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gold);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.dpad-center:active {
+  background: var(--gold);
+  color: #12090d;
+}
+.dpad-right { grid-column: 3; grid-row: 2; }
+.dpad-down { grid-column: 2; grid-row: 3; }
+
+@keyframes popIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}

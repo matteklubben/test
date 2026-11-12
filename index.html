@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Vinkällarens Säkerhetsvalv</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .video-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #070305;
+      border-radius: 14px;
+      border: 1px solid var(--gold);
+      overflow: hidden;
+      margin: 14px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .video-placeholder {
+      padding: 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="hud" class="hud-bar"></div>
+
+    <div class="card">
+      <h1>🍷 Vinkällarens Säkerhetsvalv</h1>
+      <p>Se introduktionen noggrant innan ni påbörjar utmaningen. Inga ledtrådar kommer att ges längs vägen.</p>
+
+      <div class="video-frame" id="videoContainer">
+        <video id="introVideo" controls playsinline preload="metadata" onerror="showPlaceholder()">
+          <source src="intro.mp4" type="video/mp4" />
+        </video>
+        <div id="videoPlaceholder" class="video-placeholder" style="display:none;">
+          <p style="color:var(--gold-light); font-weight:700; margin-bottom:6px;">🎬 Introduktionsfilm</p>
+          <p class="muted" style="margin:0;">Lägg filen <code>intro.mp4</code> i samma mapp på GitHub så spelas den upp automatiskt här.</p>
+        </div>
+      </div>
+
+      <a href="akt1-chiffer.html" class="btn btn-gold">Påbörja Akt 1 →</a>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    renderHUD("Prolog", 0);
+
+    function showPlaceholder() {
+      document.getElementById("introVideo").style.display = "none";
+      document.getElementById("videoPlaceholder").style.display = "block";
+    }
+  </script>
+</body>
+</html>

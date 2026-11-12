@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Akt 2 - Logikmatrisen</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .clue-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 12px 0 16px;
+    }
+    .clue-list li {
+      background: #13070c;
+      border-left: 3px solid var(--gold);
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+    .scratch-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 16px;
+      font-size: 0.78rem;
+    }
+    .scratch-table th, .scratch-table td {
+      border: 1px solid var(--border);
+      padding: 6px 4px;
+      text-align: center;
+    }
+    .scratch-table th {
+      background: var(--bg-card-elevated);
+      color: var(--gold-light);
+    }
+    .scratch-table select {
+      width: 100%;
+      background: #11060a;
+      color: #fff;
+      border: none;
+      font-size: 0.78rem;
+      padding: 4px 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="hud" class="hud-bar"></div>
+
+    <div class="card">
+      <h2>Akt 2 • Vinkällarens Logikmatris</h2>
+      <p class="muted">På vinkällarens fyra hyllor (Hylla 1 till 4, nerifrån och upp) ligger fyra unika flaskor med olika ursprungsland, årtal och pris:</p>
+
+      <ul class="clue-list">
+        <li><strong>1.</strong> Flaskan från <strong>Frankrike</strong> ligger direkt ovanför flaskan som kostar <strong>450 kr</strong>.</li>
+        <li><strong>2.</strong> Vinet från årgång <strong>1998</strong> ligger på <strong>Hylla 1</strong> och kommer inte från Spanien.</li>
+        <li><strong>3.</strong> Flaskan som kostar <strong>1 200 kr</strong> är från <strong>Italien</strong> och ligger högst upp (Hylla 4).</li>
+        <li><strong>4.</strong> Flaskan från <strong>Tyskland</strong> är från <strong>2005</strong> och kostar <strong>600 kr</strong>.</li>
+        <li><strong>5.</strong> Flaskan från <strong>1992</strong> kostar <strong>850 kr</strong> (den fjärde årgången är <strong>2011</strong>).</li>
+      </ul>
+
+      <p class="muted" style="margin-bottom:4px;">Anteckningsstöd (frivilligt):</p>
+      <table class="scratch-table">
+        <thead>
+          <tr>
+            <th>Hylla</th>
+            <th>Land</th>
+            <th>Årtal</th>
+            <th>Pris</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Hylla 4</strong></td>
+            <td><select><option>-</option><option>Frankrike</option><option>Italien</option><option>Spanien</option><option>Tyskland</option></select></td>
+            <td><select><option>-</option><option>1992</option><option>1998</option><option>2005</option><option>2011</option></select></td>
+            <td><select><option>-</option><option>450 kr</option><option>600 kr</option><option>850 kr</option><option>1 200 kr</option></select></td>
+          </tr>
+          <tr>
+            <td><strong>Hylla 3</strong></td>
+            <td><select><option>-</option><option>Frankrike</option><option>Italien</option><option>Spanien</option><option>Tyskland</option></select></td>
+            <td><select><option>-</option><option>1992</option><option>1998</option><option>2005</option><option>2011</option></select></td>
+            <td><select><option>-</option><option>450 kr</option><option>600 kr</option><option>850 kr</option><option>1 200 kr</option></select></td>
+          </tr>
+          <tr>
+            <td><strong>Hylla 2</strong></td>
+            <td><select><option>-</option><option>Frankrike</option><option>Italien</option><option>Spanien</option><option>Tyskland</option></select></td>
+            <td><select><option>-</option><option>1992</option><option>1998</option><option>2005</option><option>2011</option></select></td>
+            <td><select><option>-</option><option>450 kr</option><option>600 kr</option><option>850 kr</option><option>1 200 kr</option></select></td>
+          </tr>
+          <tr>
+            <td><strong>Hylla 1</strong></td>
+            <td><select><option>-</option><option>Frankrike</option><option>Italien</option><option>Spanien</option><option>Tyskland</option></select></td>
+            <td><select><option>-</option><option>1992</option><option>1998</option><option>2005</option><option>2011</option></select></td>
+            <td><select><option>-</option><option>450 kr</option><option>600 kr</option><option>850 kr</option><option>1 200 kr</option></select></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="font-weight:700; color:var(--gold-light);">Vilket årtal har vinet som ligger på Hylla 3?</p>
+      <input type="number" id="yearInput" placeholder="ÅRTAL (4 SIFFROR)..." inputmode="numeric" />
+      <button class="btn" onclick="checkMatrix()">Verifiera →</button>
+      <div id="feedback" class="feedback"></div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    renderHUD("Akt 2 • 2/3", 1);
+
+    // Lösning:
+    // Hylla 4: Italien, 2011, 1200 kr
+    // Hylla 3: Frankrike, 1992, 850 kr
+    // Hylla 2: Tyskland, 2005, 600 kr
+    // Hylla 1: Spanien, 1998, 450 kr
+    function checkMatrix() {
+      const val = document.getElementById("yearInput").value.trim();
+      const fb = document.getElementById("feedback");
+      if (val === "1992") {
+        fb.className = "feedback success";
+        fb.textContent = "Korrekt deduktion!";
+        setTimeout(() => {
+          window.location.href = "akt2-loggbok.html";
+        }, 750);
+      } else {
+        fb.className = "feedback error";
+        fb.textContent = "Fel årtal. Kontrollera samtliga fem villkor igen.";
+      }
+    }
+
+    document.getElementById("yearInput").addEventListener("keyup", (e) => {
+      if (e.key === "Enter") checkMatrix();
+    });
+  </script>
+</body>
+</html>

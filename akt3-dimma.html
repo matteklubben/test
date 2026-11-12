@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Akt 3 - Dimma i Källaren</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .fog-grid {
+      display: grid;
+      grid-template-columns: repeat(11, 1fr);
+      gap: 2px;
+      background: #070204;
+      padding: 6px;
+      border-radius: 12px;
+      border: 2px solid var(--gold);
+      max-width: 340px;
+      margin: 12px auto;
+    }
+    .fcell {
+      aspect-ratio: 1 / 1;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      background: #070204;
+    }
+    .fcell.visible-wall {
+      background: #471929;
+    }
+    .fcell.visible-path {
+      background: #1c0c12;
+    }
+    .status-strip {
+      display: flex;
+      justify-content: space-between;
+      background: #12060a;
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      color: var(--gold-light);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="hud" class="hud-bar"></div>
+
+    <div class="card">
+      <h2>Akt 3 • Dimma i Källaren</h2>
+      <p class="muted">Mörkret ligger tätt. Ni ser endast era närmaste omgivningar. Hitta nyckeln (🗝️) och ta er sedan till utgången (🚪).</p>
+
+      <div class="status-strip">
+        <span id="keyStatus">Nyckel: Saknas</span>
+        <span id="stepCount">Steg: 0</span>
+      </div>
+
+      <div id="fogGrid" class="fog-grid"></div>
+
+      <div class="dpad" aria-label="Styr">
+        <button class="dpad-btn dpad-up" onclick="move(0, -1)" aria-label="Upp">▲</button>
+        <button class="dpad-btn dpad-left" onclick="move(-1, 0)" aria-label="Vänster">◀</button>
+        <div class="dpad-center">💧</div>
+        <button class="dpad-btn dpad-right" onclick="move(1, 0)" aria-label="Höger">▶</button>
+        <button class="dpad-btn dpad-down" onclick="move(0, 1)" aria-label="Ner">▼</button>
+      </div>
+
+      <div id="feedback" class="feedback"></div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    renderHUD("Akt 3 • 1/3", 2);
+
+    // 11x11 labyrint (1 = vägg, 0 = gång)
+    const MAZE = [
+      [1,1,1,1,1,1,1,1,1,1,1],
+      [1,0,0,0,1,0,0,0,0,0,1],
+      [1,0,1,0,1,0,1,1,1,0,1],
+      [1,0,1,0,0,0,1,0,0,0,1],
+      [1,0,1,1,1,1,1,0,1,1,1],
+      [1,0,0,0,0,0,0,0,1,0,1],
+      [1,1,1,0,1,1,1,0,1,0,1],
+      [1,0,0,0,1,0,0,0,0,0,1],
+      [1,0,1,1,1,0,1,1,1,0,1],
+      [1,0,0,0,0,0,1,0,0,0,1],
+      [1,1,1,1,1,1,1,1,1,1,1]
+    ];
+
+    let player = { x: 1, y: 1 };
+    const keyPos = { x: 9, y: 5 };
+    const exitPos = { x: 9, y: 9 };
+    let hasKey = false;
+    let steps = 0;
+
+    function renderMaze() {
+      const grid = document.getElementById("fogGrid");
+      grid.innerHTML = "";
+
+      for (let y = 0; y < 11; y++) {
+        for (let x = 0; x < 11; x++) {
+          const cell = document.createElement("div");
+          cell.className = "fcell";
+
+          // Fog of War: synlig radie = max 1 ruta bort (Chebyshev-avstånd <= 1)
+          const isVisible = Math.abs(x - player.x) <= 1 && Math.abs(y - player.y) <= 1;
+
+          if (isVisible) {
+            if (MAZE[y][x] === 1) {
+              cell.classList.add("visible-wall");
+            } else {
+              cell.classList.add("visible-path");
+            }
+
+            if (x === player.x && y === player.y) {
+              cell.textContent = "💧";
+            } else if (!hasKey && x === keyPos.x && y === keyPos.y) {
+              cell.textContent = "🗝️";
+            } else if (x === exitPos.x && y === exitPos.y) {
+              cell.textContent = "🚪";
+            }
+          }
+          grid.appendChild(cell);
+        }
+      }
+    }
+
+    function move(dx, dy) {
+      const nx = player.x + dx;
+      const ny = player.y + dy;
+      const fb = document.getElementById("feedback");
+
+      if (MAZE[ny] && MAZE[ny][nx] === 0) {
+        player.x = nx;
+        player.y = ny;
+        steps++;
+        document.getElementById("stepCount").textContent = `Steg: ${steps}`;
+        fb.style.display = "none";
+
+        if (!hasKey && nx === keyPos.x && ny === keyPos.y) {
+          hasKey = true;
+          document.getElementById("keyStatus").textContent = "Nyckel: Funnen 🗝️";
+          fb.className = "feedback success";
+          fb.textContent = "Ni hittade nyckeln! Leta nu upp utgången.";
+        }
+
+        if (nx === exitPos.x && ny === exitPos.y) {
+          if (hasKey) {
+            fb.className = "feedback success";
+            fb.textContent = "Dörren låses upp!";
+            setTimeout(() => {
+              window.location.href = "akt3-ror.html";
+            }, 800);
+          } else {
+            fb.className = "feedback error";
+            fb.textContent = "Dörren är låst. Ni måste hitta nyckeln i mörkret först.";
+          }
+        }
+        renderMaze();
+      }
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowUp") move(0, -1);
+      if (e.key === "ArrowDown") move(0, 1);
+      if (e.key === "ArrowLeft") move(-1, 0);
+      if (e.key === "ArrowRight") move(1, 0);
+    });
+
+    renderMaze();
+  </script>
+</body>
+</html>
