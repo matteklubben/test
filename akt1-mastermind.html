@@ -3,112 +3,119 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Akt 1 - Färgkoden (Mastermind)</title>
+  <title>Akt 1 - Färgkoden</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    .stats-bar {
+    .mm-board {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #13060a;
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      border-radius: 8px;
-      padding: 8px 12px;
-      margin-bottom: 12px;
-      font-size: 0.85rem;
-      color: var(--gold-light);
+      flex-direction: column;
+      gap: 6px;
+      margin: 14px 0;
     }
-    .color-palette {
+    .mm-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #14070c;
+      border: 1px solid rgba(212, 175, 55, 0.22);
+      border-radius: 10px;
+      padding: 6px 10px;
+      min-height: 44px;
+    }
+    .mm-row.active {
+      border-color: var(--gold);
+      background: #1d0c13;
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.18);
+    }
+    .mm-row-num {
+      font-size: 0.78rem;
+      color: #9e8783;
+      width: 22px;
+      font-weight: bold;
+    }
+    .mm-pegs {
+      display: flex;
+      gap: 8px;
+    }
+    .mm-peg {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #0b0306;
+      border: 1px dashed rgba(212, 175, 55, 0.35);
+      cursor: pointer;
+    }
+    .mm-peg.filled {
+      border-style: solid;
+      border-color: rgba(255, 255, 255, 0.55);
+    }
+    .mm-clues {
+      display: grid;
+      grid-template-columns: repeat(2, 11px);
+      gap: 4px;
+    }
+    .mm-clue-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #241017;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .mm-clue-dot.black {
+      background: #2ecc71;
+      border-color: #2ecc71;
+      box-shadow: 0 0 5px rgba(46, 204, 113, 0.6);
+    }
+    .mm-clue-dot.white {
+      background: #f1c40f;
+      border-color: #f1c40f;
+    }
+    .mm-palette {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
-      gap: 6px;
+      gap: 7px;
       margin: 12px 0;
     }
-    .color-btn {
-      height: 44px;
+    .mm-color-btn {
+      height: 42px;
       border-radius: 10px;
       border: 2px solid rgba(255, 255, 255, 0.25);
       cursor: pointer;
       transition: transform 0.1s;
     }
-    .color-btn:active {
+    .mm-color-btn:active {
       transform: scale(0.92);
     }
-    .guess-row-current {
+    .mm-controls {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #1d0c13;
-      border: 1px solid var(--gold);
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .btn-clear {
+      background: transparent;
+      border: 1px solid rgba(212, 175, 55, 0.45);
+      color: var(--gold-light);
       border-radius: 10px;
-      padding: 8px 10px;
-      margin-bottom: 12px;
-      gap: 8px;
-    }
-    .slots {
-      display: flex;
-      gap: 8px;
-    }
-    .slot {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: #0f0408;
-      border: 2px dashed rgba(212, 175, 55, 0.45);
+      padding: 12px 14px;
+      font-weight: bold;
       cursor: pointer;
-      transition: background 0.15s, border-style 0.15s;
+      width: 34%;
     }
-    .slot.filled {
-      border-style: solid;
-      border-color: rgba(255, 255, 255, 0.6);
+    .btn-check {
+      width: 66%;
+      margin: 0;
     }
-    .history-list {
+    .mm-legend {
       display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin: 12px 0;
-      max-height: 280px;
-      overflow-y: auto;
-    }
-    .history-item {
-      display: flex;
-      align-items: center;
       justify-content: space-between;
-      background: #14070c;
-      border: 1px solid rgba(212, 175, 55, 0.2);
+      align-items: center;
+      font-size: 0.78rem;
+      color: #cbb8b4;
+      background: #13060a;
+      border: 1px solid rgba(212, 175, 55, 0.25);
       border-radius: 8px;
-      padding: 6px 10px;
-    }
-    .history-pegs {
-      display: flex;
-      gap: 6px;
-    }
-    .mini-peg {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.35);
-    }
-    .feedback-pegs {
-      display: grid;
-      grid-template-columns: repeat(2, 12px);
-      gap: 4px;
-    }
-    .fb-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: #2a151d;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-    }
-    .fb-dot.exact {
-      background: #2ecc71;
-      border-color: #2ecc71;
-      box-shadow: 0 0 6px rgba(46, 204, 113, 0.6);
-    }
-    .fb-dot.partial {
-      background: #f1c40f;
-      border-color: #f1c40f;
+      padding: 7px 10px;
+      margin-bottom: 10px;
     }
     .win-actions {
       display: flex;
@@ -127,19 +134,6 @@
       cursor: pointer;
       width: 100%;
     }
-    .legend {
-      display: flex;
-      justify-content: center;
-      gap: 14px;
-      font-size: 0.78rem;
-      color: #cbb8b4;
-      margin-bottom: 10px;
-    }
-    .legend span {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
   </style>
 </head>
 <body>
@@ -148,37 +142,32 @@
 
     <div class="card">
       <h2>Akt 1 • Källarens Färglås</h2>
-      <p class="muted">Knäck den hemliga 4-färgskoden (färger kan förekomma flera gånger). Det räcker att klara låset <strong>1 gång</strong> för att låsa upp vägen vidare – men du kan spela hur många omgångar du vill!</p>
+      <p class="muted">Knäck koden på 4 färger (samma färg kan förekomma flera gånger). Det räcker att klara spelet <strong>1 gång</strong> för att gå vidare – men du kan spela fler omgångar om du vill.</p>
 
-      <div class="stats-bar">
-        <span id="roundLabel">Omgång 1</span>
-        <span id="solvedLabel">Klarade: 0 st</span>
-        <span id="attemptsLabel">Försök: 0 / 10</span>
+      <div class="mm-legend">
+        <span>🟢 Rätt färg & plats</span>
+        <span>🟡 Rätt färg, fel plats</span>
+        <span id="solvedCounter">Klarade: 0</span>
       </div>
 
-      <div class="legend">
-        <span><i class="fb-dot exact" style="display:inline-block;"></i> Rätt färg & plats</span>
-        <span><i class="fb-dot partial" style="display:inline-block;"></i> Rätt färg, fel plats</span>
-      </div>
+      <!-- Klassiskt Mastermind-bräde med 8 rader -->
+      <div id="mmBoard" class="mm-board"></div>
 
-      <div id="gamePlayArea">
-        <div class="guess-row-current">
-          <div id="currentSlots" class="slots"></div>
-          <button class="btn" style="width: auto; padding: 10px 14px; margin: 0;" onclick="submitGuess()">Testa</button>
+      <!-- Färgpalett och knappar längst ner som i originalet -->
+      <div id="inputSection">
+        <div id="mmPalette" class="mm-palette"></div>
+        <div class="mm-controls">
+          <button class="btn-clear" onclick="clearCurrentGuess()">Rensa</button>
+          <button class="btn btn-check" onclick="checkCurrentGuess()">Testa kod</button>
         </div>
-
-        <div id="colorPalette" class="color-palette"></div>
       </div>
 
       <div id="feedback" class="feedback"></div>
 
-      <!-- Visas så fort minst 1 omgång är klarad -->
       <div id="winActions" class="win-actions" style="display: none;">
         <button class="btn" onclick="goNextChallenge()">Gå vidare till nästa utmaning →</button>
-        <button class="btn-secondary-gold" onclick="startNewRound()">↻ Spela en omgång till</button>
+        <button class="btn-secondary-gold" onclick="resetBoardForNewRound()">↻ Spela en omgång till</button>
       </div>
-
-      <div id="historyList" class="history-list"></div>
     </div>
   </div>
 
@@ -188,219 +177,203 @@
     try { renderHUD("Akt 1 • 2/3", 0); } catch (e) {}
 
     const COLORS = [
-      { id: "red",    name: "Röd",    hex: "#e74c3c" },
-      { id: "gold",   name: "Guld",   hex: "#f1c40f" },
-      { id: "green",  name: "Grön",   hex: "#2ecc71" },
-      { id: "blue",   name: "Blå",    hex: "#3498db" },
-      { id: "purple", name: "Lila",   hex: "#9b59b6" },
-      { id: "white",  name: "Vit",    hex: "#ecf0f1" }
+      { id: "red",    hex: "#e74c3c" },
+      { id: "gold",   hex: "#f1c40f" },
+      { id: "green",  hex: "#2ecc71" },
+      { id: "blue",   hex: "#3498db" },
+      { id: "purple", hex: "#9b59b6" },
+      { id: "white",  hex: "#ecf0f1" }
     ];
 
-    const CODE_LENGTH = 4;
-    const MAX_ATTEMPTS = 10;
+    const CODE_LEN = 4;
+    const MAX_ROWS = 8;
 
-    let secretCode = [];
+    let secret = [];
+    let history = [];
     let currentGuess = [null, null, null, null];
-    let attempts = 0;
-    let roundNumber = 1;
+    let roundFinished = false;
     let solvedCount = 0;
-    let roundOver = false;
 
-    function generateSecret() {
-      const code = [];
-      for (let i = 0; i < CODE_LENGTH; i++) {
-        const rand = COLORS[Math.floor(Math.random() * COLORS.length)];
-        code.push(rand.id);
-      }
-      return code;
-    }
-
-    function updateStats() {
-      document.getElementById("roundLabel").textContent = `Omgång ${roundNumber}`;
-      document.getElementById("solvedLabel").textContent = `Klarade: ${solvedCount} st`;
-      document.getElementById("attemptsLabel").textContent = `Försök: ${attempts} / ${MAX_ATTEMPTS}`;
+    function createSecret() {
+      return Array.from({ length: CODE_LEN }, () => COLORS[Math.floor(Math.random() * COLORS.length)].id);
     }
 
     function renderPalette() {
-      const pal = document.getElementById("colorPalette");
+      const pal = document.getElementById("mmPalette");
       pal.innerHTML = "";
       COLORS.forEach(c => {
         const btn = document.createElement("button");
-        btn.className = "color-btn";
+        btn.className = "mm-color-btn";
         btn.style.background = c.hex;
-        btn.title = c.name;
-        btn.onclick = () => pickColor(c.id);
+        btn.onclick = () => {
+          if (roundFinished) return;
+          const idx = currentGuess.indexOf(null);
+          if (idx !== -1) {
+            currentGuess[idx] = c.id;
+            renderBoard();
+          }
+        };
         pal.appendChild(btn);
       });
     }
 
-    function renderSlots() {
-      const container = document.getElementById("currentSlots");
-      container.innerHTML = "";
-      for (let i = 0; i < CODE_LENGTH; i++) {
-        const slot = document.createElement("div");
-        slot.className = "slot";
-        const colId = currentGuess[i];
-        if (colId) {
-          const colObj = COLORS.find(c => c.id === colId);
-          slot.style.background = colObj.hex;
-          slot.classList.add("filled");
+    function renderBoard() {
+      const board = document.getElementById("mmBoard");
+      board.innerHTML = "";
+
+      for (let r = 0; r < MAX_ROWS; r++) {
+        const rowDiv = document.createElement("div");
+        const isCurrent = !roundFinished && r === history.length;
+        rowDiv.className = "mm-row" + (isCurrent ? " active" : "");
+
+        const numSpan = document.createElement("span");
+        numSpan.className = "mm-row-num";
+        numSpan.textContent = r + 1;
+        rowDiv.appendChild(numSpan);
+
+        const pegsDiv = document.createElement("div");
+        pegsDiv.className = "mm-pegs";
+
+        const rowData = r < history.length ? history[r].guess : (isCurrent ? currentGuess : [null, null, null, null]);
+
+        for (let c = 0; c < CODE_LEN; c++) {
+          const peg = document.createElement("div");
+          peg.className = "mm-peg";
+          const colId = rowData[c];
+          if (colId) {
+            const colObj = COLORS.find(x => x.id === colId);
+            peg.style.background = colObj.hex;
+            peg.classList.add("filled");
+          }
+          if (isCurrent) {
+            peg.onclick = () => {
+              currentGuess[c] = null;
+              renderBoard();
+            };
+          }
+          pegsDiv.appendChild(peg);
         }
-        slot.onclick = () => {
-          if (roundOver) return;
-          currentGuess[i] = null;
-          renderSlots();
-        };
-        container.appendChild(slot);
+        rowDiv.appendChild(pegsDiv);
+
+        const cluesDiv = document.createElement("div");
+        cluesDiv.className = "mm-clues";
+        const exact = r < history.length ? history[r].exact : 0;
+        const partial = r < history.length ? history[r].partial : 0;
+
+        for (let i = 0; i < exact; i++) {
+          const d = document.createElement("div");
+          d.className = "mm-clue-dot black";
+          cluesDiv.appendChild(d);
+        }
+        for (let i = 0; i < partial; i++) {
+          const d = document.createElement("div");
+          d.className = "mm-clue-dot white";
+          cluesDiv.appendChild(d);
+        }
+        for (let i = 0; i < CODE_LEN - exact - partial; i++) {
+          const d = document.createElement("div");
+          d.className = "mm-clue-dot";
+          cluesDiv.appendChild(d);
+        }
+
+        rowDiv.appendChild(cluesDiv);
+        board.appendChild(rowDiv);
       }
     }
 
-    function pickColor(colorId) {
-      if (roundOver) return;
-      const emptyIdx = currentGuess.indexOf(null);
-      if (emptyIdx !== -1) {
-        currentGuess[emptyIdx] = colorId;
-        renderSlots();
-      }
+    function clearCurrentGuess() {
+      if (roundFinished) return;
+      currentGuess = [null, null, null, null];
+      renderBoard();
     }
 
-    function evaluateGuess(guess, secret) {
+    function evaluate(guess, target) {
       let exact = 0;
       let partial = 0;
-      const secretLeft = [];
-      const guessLeft = [];
+      const tRest = [];
+      const gRest = [];
 
-      for (let i = 0; i < CODE_LENGTH; i++) {
-        if (guess[i] === secret[i]) {
+      for (let i = 0; i < CODE_LEN; i++) {
+        if (guess[i] === target[i]) {
           exact++;
         } else {
-          secretLeft.push(secret[i]);
-          guessLeft.push(guess[i]);
+          tRest.push(target[i]);
+          gRest.push(guess[i]);
         }
       }
-
-      for (const g of guessLeft) {
-        const idx = secretLeft.indexOf(g);
+      for (const g of gRest) {
+        const idx = tRest.indexOf(g);
         if (idx !== -1) {
           partial++;
-          secretLeft.splice(idx, 1);
+          tRest.splice(idx, 1);
         }
       }
-
       return { exact, partial };
     }
 
-    function addHistoryRow(guess, result) {
-      const list = document.getElementById("historyList");
-      const item = document.createElement("div");
-      item.className = "history-item";
-
-      const pegsDiv = document.createElement("div");
-      pegsDiv.className = "history-pegs";
-      guess.forEach(colId => {
-        const colObj = COLORS.find(c => c.id === colId);
-        const peg = document.createElement("div");
-        peg.className = "mini-peg";
-        peg.style.background = colObj.hex;
-        pegsDiv.appendChild(peg);
-      });
-
-      const fbDiv = document.createElement("div");
-      fbDiv.className = "feedback-pegs";
-      for (let i = 0; i < result.exact; i++) {
-        const d = document.createElement("div");
-        d.className = "fb-dot exact";
-        fbDiv.appendChild(d);
-      }
-      for (let i = 0; i < result.partial; i++) {
-        const d = document.createElement("div");
-        d.className = "fb-dot partial";
-        fbDiv.appendChild(d);
-      }
-      const remaining = CODE_LENGTH - result.exact - result.partial;
-      for (let i = 0; i < remaining; i++) {
-        const d = document.createElement("div");
-        d.className = "fb-dot";
-        fbDiv.appendChild(d);
-      }
-
-      item.appendChild(pegsDiv);
-      item.appendChild(fbDiv);
-      list.prepend(item);
-    }
-
-    function submitGuess() {
-      if (roundOver) return;
+    function checkCurrentGuess() {
+      if (roundFinished) return;
       const fb = document.getElementById("feedback");
 
       if (currentGuess.includes(null)) {
         fb.className = "feedback error";
-        fb.textContent = "Välj 4 färger innan du testar koden.";
+        fb.textContent = "Fyll alla 4 platser innan du testar koden.";
         return;
       }
 
-      attempts++;
-      updateStats();
+      const res = evaluate(currentGuess, secret);
+      history.push({ guess: [...currentGuess], exact: res.exact, partial: res.partial });
+      currentGuess = [null, null, null, null];
+      renderBoard();
 
-      const result = evaluateGuess(currentGuess, secretCode);
-      addHistoryRow([...currentGuess], result);
-
-      if (result.exact === CODE_LENGTH) {
-        roundOver = true;
+      if (res.exact === CODE_LEN) {
+        roundFinished = true;
         solvedCount++;
-        updateStats();
-
+        document.getElementById("solvedCounter").textContent = `Klarade: ${solvedCount}`;
         try { saveProgress("akt1-morse.html", 0); } catch (e) {}
 
         fb.className = "feedback success";
         fb.textContent = solvedCount === 1
-          ? "Snyggt! Du knäckte färglåset och har låst upp nästa utmaning – gå vidare eller spela en omgång till!"
-          : `Grymt! Du har nu klarat ${solvedCount} omgångar!`;
+          ? "Snyggt! Du knäckte färglåset. Gå vidare till nästa utmaning eller spela en omgång till!"
+          : `Grymt! Du har klarat ${solvedCount} omgångar!`;
 
-        document.getElementById("gamePlayArea").style.display = "none";
+        document.getElementById("inputSection").style.display = "none";
         document.getElementById("winActions").style.display = "flex";
         return;
       }
 
-      if (attempts >= MAX_ATTEMPTS) {
-        roundOver = true;
+      if (history.length >= MAX_ROWS) {
+        roundFinished = true;
         fb.className = "feedback error";
-        fb.textContent = "Slut på försök i denna omgång! Startar en ny kod...";
+        fb.textContent = "Slut på försök! Ny kod laddas...";
         setTimeout(() => {
-          startNewRound(true);
+          resetBoardForNewRound();
         }, 1600);
         return;
       }
 
       fb.className = "feedback";
       fb.textContent = "";
-      currentGuess = [null, null, null, null];
-      renderSlots();
     }
 
-    function startNewRound(sameRoundOnFail = false) {
-      if (!sameRoundOnFail) {
-        roundNumber++;
-      }
-      secretCode = generateSecret();
+    function resetBoardForNewRound() {
+      secret = createSecret();
+      history = [];
       currentGuess = [null, null, null, null];
-      attempts = 0;
-      roundOver = false;
+      roundFinished = false;
 
-      document.getElementById("historyList").innerHTML = "";
       const fb = document.getElementById("feedback");
       fb.className = "feedback";
       fb.textContent = "";
 
-      document.getElementById("gamePlayArea").style.display = "block";
+      document.getElementById("inputSection").style.display = "block";
       if (solvedCount > 0) {
         document.getElementById("winActions").style.display = "flex";
       } else {
         document.getElementById("winActions").style.display = "none";
       }
 
-      updateStats();
-      renderSlots();
+      renderBoard();
     }
 
     function goNextChallenge() {
@@ -408,11 +381,9 @@
       window.location.href = "akt1-morse.html";
     }
 
-    // Initiera första omgången
-    secretCode = generateSecret();
+    secret = createSecret();
     renderPalette();
-    renderSlots();
-    updateStats();
+    renderBoard();
   </script>
 </body>
 </html>
