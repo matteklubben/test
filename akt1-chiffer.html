@@ -24,6 +24,7 @@
 
   <script src="config.js"></script>
   <script>
+    saveProgress("akt1-chiffer.html", 0);
     renderHUD("Akt 1 • 1/3", 0);
 
     function checkAnswer() {
@@ -32,6 +33,7 @@
       if (val === "PEPPARKAKA") {
         fb.className = "feedback success";
         fb.textContent = "Åtkomst beviljad.";
+        saveProgress("akt1-mastermind.html", 0);
         setTimeout(() => {
           window.location.href = "akt1-mastermind.html";
         }, 700);

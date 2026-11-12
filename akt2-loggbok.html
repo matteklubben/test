@@ -6,6 +6,23 @@
   <title>Akt 2 - Källarmästarens Loggbok</title>
   <link rel="stylesheet" href="style.css" />
   <style>
+    .progress-pills {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .p-pill {
+      flex: 1;
+      height: 8px;
+      border-radius: 999px;
+      background: #14080d;
+      border: 1px solid var(--border);
+    }
+    .p-pill.done {
+      background: var(--gold);
+      border-color: var(--gold-light);
+      box-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
+    }
     .note-paper {
       background: #efe3c8;
       color: #261811;
@@ -41,6 +58,10 @@
       transform: scale(0.98);
       border-color: var(--gold);
     }
+    .label-card:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
     .label-top {
       display: flex;
       justify-content: space-between;
@@ -60,7 +81,14 @@
     <div id="hud" class="hud-bar"></div>
 
     <div class="card" id="logCard">
-      <h2 id="roundTitle">Akt 2 • Loggboken (1/2)</h2>
+      <h2 id="roundTitle">Akt 2 • Källarmästarens Loggbok</h2>
+      <p class="muted">Endast <strong>ett försök</strong> per anteckning. Gissar ni fel byts sidan ut. Klara <strong>3 anteckningar</strong>.</p>
+
+      <div class="progress-pills">
+        <div class="p-pill" id="pill0"></div>
+        <div class="p-pill" id="pill1"></div>
+        <div class="p-pill" id="pill2"></div>
+      </div>
 
       <div class="note-paper">
         <p id="noteText"></p>
@@ -82,12 +110,13 @@
 
   <script src="config.js"></script>
   <script>
+    saveProgress("akt2-loggbok.html", 1);
     renderHUD("Akt 2 • 3/3", 1);
 
-    const ROUNDS = [
+    // Stor bank med uppsättningar så att fel gissning direkt laddar en helt ny gåta!
+    const QUESTION_BANK = [
       {
-        title: "Akt 2 • Loggboken (1/2)",
-        note: "”Den första nyckeln gömdes bakom flaskan som skördades samma sommar som människan tog sina första steg på månen. Druvorna växte i den svarta askan på sluttningen av en aktiv vulkan i Medelhavet.”",
+        note: "”Denna flaska skördades samma sommar som människan tog sina första steg på månen. Druvorna växte i den svarta askan på sluttningen av en aktiv vulkan i Medelhavet.”",
         options: [
           { name: "Château Margaux", year: "1969", meta: "Bordeaux, Frankrike • Cabernet Sauvignon • 13.0%", correct: false },
           { name: "Etna Rosso Riserva", year: "1969", meta: "Sicilien, Italien • Nerello Mascalese • 13.5%", correct: true },
@@ -97,8 +126,7 @@
         ]
       },
       {
-        title: "Akt 2 • Loggboken (2/2)",
-        note: "”Den andra delen av koden fästes vid en gyllene årgång från det år då Berlinmuren föll. Vinet kommer från världens nordligaste klassiska vinregion för mousserande vin och håller exakt 12,5 % alkohol.”",
+        note: "”En gyllene årgång från det år då Berlinmuren föll. Vinet kommer från världens nordligaste klassiska vinregion för mousserande vin och håller exakt 12,5 % alkohol.”",
         options: [
           { name: "Dom Pérignon Vintage", year: "1989", meta: "Champagne, Frankrike • Chardonnay/Pinot Noir • 12.5%", correct: true },
           { name: "Dom Pérignon Vintage", year: "1989", meta: "Champagne, Frankrike • Chardonnay/Pinot Noir • 13.0%", correct: false },
@@ -106,20 +134,79 @@
           { name: "Franciacorta Satèn", year: "1989", meta: "Lombardiet, Italien • Chardonnay • 12.5%", correct: false },
           { name: "Riesling Auslese", year: "1989", meta: "Mosel, Tyskland • Riesling • 8.5%", correct: false }
         ]
+      },
+      {
+        note: "”Ett kraftfullt rött vin från norra Italien, framställt på torkade druvor enligt appassimento-metoden. Buteljerat samma år som millennieskiftet firades och med en alkoholhalt över 15 %.”",
+        options: [
+          { name: "Amarone della Valpolicella", year: "2000", meta: "Veneto, Italien • Corvina/Rondinella • 15.5%", correct: true },
+          { name: "Amarone della Valpolicella", year: "2000", meta: "Veneto, Italien • Corvina/Rondinella • 14.5%", correct: false },
+          { name: "Ripasso Superiore", year: "2000", meta: "Veneto, Italien • Corvina • 15.5%", correct: false },
+          { name: "Brunello di Montalcino", year: "2000", meta: "Toscana, Italien • Sangiovese • 15.5%", correct: false },
+          { name: "Amarone della Valpolicella", year: "1999", meta: "Veneto, Italien • Corvina/Rondinella • 15.5%", correct: false }
+        ]
+      },
+      {
+        note: "”Ett krispigt, mineralrikt vitt vin från det kalkrika distriktet i norra Bourgogne som är känt för sin ostronfossila jordmån. Skördat samma år som Titanic förliste och lagrat helt utan ekfat.”",
+        options: [
+          { name: "Chablis Grand Cru Les Clos", year: "1912", meta: "Bourgogne, Frankrike • Chardonnay • Ståltank", correct: true },
+          { name: "Meursault Premier Cru", year: "1912", meta: "Bourgogne, Frankrike • Chardonnay • Ekfat", correct: false },
+          { name: "Chablis Grand Cru Les Clos", year: "1914", meta: "Bourgogne, Frankrike • Chardonnay • Ståltank", correct: false },
+          { name: "Sancerre Blanc", year: "1912", meta: "Loiredalen, Frankrike • Sauvignon Blanc • Ståltank", correct: false },
+          { name: "Chablis Grand Cru Les Clos", year: "1912", meta: "Bourgogne, Frankrike • Pinot Noir • Ståltank", correct: false }
+        ]
+      },
+      {
+        note: "”En legendarisk Riojaklassiker från Spanien som vilat länge på amerikansk ek. Årgången är densamma som det år då Chernobyl-olyckan inträffade, och vinet bär den högsta lagringsklassificeringen.”",
+        options: [
+          { name: "Viña Tondonia Gran Reserva", year: "1986", meta: "Rioja, Spanien • Tempranillo • Amerikansk ek", correct: true },
+          { name: "Viña Tondonia Reserva", year: "1986", meta: "Rioja, Spanien • Tempranillo • Amerikansk ek", correct: false },
+          { name: "Vega Sicilia Único", year: "1986", meta: "Ribera del Duero, Spanien • Tempranillo • Fransk ek", correct: false },
+          { name: "Viña Tondonia Gran Reserva", year: "1984", meta: "Rioja, Spanien • Tempranillo • Amerikansk ek", correct: false },
+          { name: "Marqués de Riscal Gran Reserva", year: "1986", meta: "Rioja, Spanien • Garnacha • Ståltank", correct: false }
+        ]
+      },
+      {
+        note: "”Ett berömt ädelsött dessertvin från Bordeaux, angripet av ädelröta (Botrytis cinerea). Skördat året efter första världskrigets slut och med en alkoholhalt på 13,5 %.”",
+        options: [
+          { name: "Château d'Yquem", year: "1919", meta: "Sauternes, Frankrike • Sémillon/Sauvignon Blanc • 13.5%", correct: true },
+          { name: "Château d'Yquem", year: "1918", meta: "Sauternes, Frankrike • Sémillon/Sauvignon Blanc • 13.5%", correct: false },
+          { name: "Tokaji Aszú 6 Puttonyos", year: "1919", meta: "Tokaj, Ungern • Furmint • 11.5%", correct: false },
+          { name: "Château Lafite Rothschild", year: "1919", meta: "Pauillac, Frankrike • Cabernet Sauvignon • 13.5%", correct: false },
+          { name: "Château d'Yquem", year: "1920", meta: "Sauternes, Frankrike • Sémillon • 13.5%", correct: false }
+        ]
       }
     ];
 
-    let currentRound = 0;
+    let solvedCount = 0;
+    let pool = [...QUESTION_BANK].sort(() => Math.random() - 0.5);
+    let currentQ = null;
+    let locked = false;
 
-    function renderRound() {
-      const data = ROUNDS[currentRound];
-      document.getElementById("roundTitle").textContent = data.title;
-      document.getElementById("noteText").textContent = data.note;
+    function updatePills() {
+      for (let i = 0; i < 3; i++) {
+        const pill = document.getElementById("pill" + i);
+        if (i < solvedCount) pill.classList.add("done");
+        else pill.classList.remove("done");
+      }
+      document.getElementById("roundTitle").textContent = `Akt 2 • Loggboken (${solvedCount}/3 klara)`;
+    }
+
+    function nextQuestion() {
+      if (pool.length === 0) {
+        pool = [...QUESTION_BANK].sort(() => Math.random() - 0.5);
+      }
+      currentQ = pool.pop();
+      locked = false;
+      updatePills();
+
+      document.getElementById("noteText").textContent = currentQ.note;
       document.getElementById("feedback").style.display = "none";
 
       const grid = document.getElementById("labelGrid");
       grid.innerHTML = "";
-      data.options.forEach(opt => {
+      const shuffledOptions = [...currentQ.options].sort(() => Math.random() - 0.5);
+
+      shuffledOptions.forEach(opt => {
         const btn = document.createElement("button");
         btn.className = "label-card";
         btn.innerHTML = `
@@ -132,28 +219,33 @@
     }
 
     function handlePick(isCorrect) {
+      if (locked) return;
+      locked = true;
       const fb = document.getElementById("feedback");
+      document.querySelectorAll(".label-card").forEach(b => b.disabled = true);
+
       if (isCorrect) {
-        if (currentRound === 0) {
-          fb.className = "feedback success";
-          fb.textContent = "Rätt etikett. En dold sida i loggboken öppnas...";
-          setTimeout(() => {
-            currentRound = 1;
-            renderRound();
-          }, 900);
-        } else {
+        solvedCount++;
+        updatePills();
+        if (solvedCount >= 3) {
+          saveProgress("akt3-dimma.html", 2);
           document.getElementById("logCard").style.display = "none";
           document.getElementById("rewardCard").style.display = "block";
           document.getElementById("revealedDigit").textContent = VAULT_CONFIG.digit2;
           renderHUD("Akt 2 Klar", 2);
+        } else {
+          fb.className = "feedback success";
+          fb.textContent = `Rätt etikett (${solvedCount}/3)! Laddar nästa anteckning...`;
+          setTimeout(nextQuestion, 1000);
         }
       } else {
         fb.className = "feedback error";
-        fb.textContent = "Fel flaska. Granska varje detalj i anteckningen.";
+        fb.textContent = "Fel flaska! Den sidan brändes – en ny uppsättning laddas...";
+        setTimeout(nextQuestion, 1300);
       }
     }
 
-    renderRound();
+    nextQuestion();
   </script>
 </body>
 </html>

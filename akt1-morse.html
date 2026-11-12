@@ -19,7 +19,7 @@
       background: #210d14;
       border: 3px solid var(--gold);
       box-shadow: inset 0 0 18px #000;
-      transition: background 0.04s, box-shadow 0.04s;
+      transition: background 0.05s, box-shadow 0.05s;
       margin-bottom: 14px;
     }
     .morse-lamp.on {
@@ -59,19 +59,21 @@
 
   <script src="config.js"></script>
   <script>
+    saveProgress("akt1-morse.html", 0);
     renderHUD("Akt 1 • 3/3", 0);
 
-    // Autentiskt morse-tempo (ca 13 WPM -> dit = 95ms, dah = 285ms)
+    // Tydligare, långsammare morse-tempo så man hinner uppfatta streck, prickar och pauser:
+    // DIT = 210 ms, DAH = 630 ms, paus mellan symboler = 230 ms, paus mellan bokstäver = 950 ms
     // Ordet är TOMTE:
     // T: -
     // O: ---
     // M: --
     // T: -
     // E: .
-    const DIT = 95;
-    const DAH = DIT * 3;
-    const INTRA = DIT;
-    const LETTER_GAP = DIT * 3;
+    const DIT = 210;
+    const DAH = 630;
+    const INTRA = 230;
+    const LETTER_GAP = 950;
 
     const MORSE_WORD = [
       [DAH],                // T
@@ -94,12 +96,12 @@
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = "sine";
-      osc.frequency.value = 680; // Klassisk CW-morseton (680 Hz)
+      osc.frequency.value = 650;
 
       const now = audioCtx.currentTime;
       gain.gain.setValueAtTime(0.001, now);
-      gain.gain.exponentialRampToValueAtTime(0.35, now + 0.008);
-      gain.gain.setValueAtTime(0.35, now + (durationMs / 1000) - 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.35, now + 0.012);
+      gain.gain.setValueAtTime(0.35, now + (durationMs / 1000) - 0.012);
       gain.gain.exponentialRampToValueAtTime(0.001, now + (durationMs / 1000));
 
       osc.connect(gain);
@@ -140,6 +142,7 @@
       const val = document.getElementById("morseInput").value.trim().toUpperCase();
       const fb = document.getElementById("feedback");
       if (val === "TOMTE") {
+        saveProgress("akt2-lightsout.html", 1);
         document.getElementById("puzzleCard").style.display = "none";
         document.getElementById("rewardCard").style.display = "block";
         document.getElementById("revealedDigit").textContent = VAULT_CONFIG.digit1;

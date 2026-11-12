@@ -83,29 +83,29 @@
 
   <script src="config.js"></script>
   <script>
+    saveProgress("akt3-ror.html", 2);
     renderHUD("Akt 3 • 2/3", 2);
 
-    // Rörtyper:
-    // 'I' = rakt rör (rot 0: Top-Bottom, rot 1: Left-Right)
-    // 'L' = 90-graders böj (rot 0: Top-Right, rot 1: Right-Bottom, rot 2: Bottom-Left, rot 3: Left-Top)
-    // 'T' = T-korsning (rot 0: Top-Right-Bottom, rot 1: Right-Bottom-Left, rot 2: Bottom-Left-Top, rot 3: Left-Top-Right)
-    // 'X' = Fyrvägskorsning (alla 4 håll)
-
+    // Garanterat lösbart 5x5 rörnät!
+    // Lösningens exakta slinga utan några som helst läckor:
+    // (0,0)[rot 0: Top-Bottom] -> (1,0)[rot 0: Top-Right] -> (1,1)[rot 1: Left-Right] -> (1,2)[rot 2: Bottom-Left]
+    // -> (2,2)[rot 0: Top-Bottom] -> (3,2)[rot 0: Top-Right] -> (3,3)[rot 1: Left-Right] -> (3,4)[rot 2: Bottom-Left]
+    // -> (4,4)[rot 0: Top-Bottom -> utlopp!]
     const LEVEL_TYPES = [
       ['I', 'L', 'I', 'L', 'L'],
-      ['L', 'T', 'I', 'L', 'I'],
-      ['I', 'L', 'L', 'T', 'L'],
-      ['L', 'I', 'T', 'L', 'I'],
-      ['L', 'L', 'I', 'L', 'I']
+      ['L', 'I', 'L', 'I', 'L'],
+      ['L', 'I', 'I', 'L', 'I'],
+      ['I', 'L', 'L', 'I', 'L'],
+      ['L', 'I', 'L', 'I', 'I']
     ];
 
-    // Startrotationer (vridna så att spelaren måste lösa pusslet)
+    // Blandade startrotationer (alltid minst 1 vridning från lösningen)
     let rots = [
-      [1, 0, 0, 2, 1],
-      [2, 1, 1, 3, 1],
-      [1, 3, 0, 2, 0],
-      [0, 1, 3, 1, 1],
-      [2, 0, 1, 3, 1]
+      [1, 2, 0, 1, 3],
+      [1, 0, 1, 1, 2],
+      [3, 1, 1, 0, 0],
+      [0, 2, 2, 0, 1],
+      [1, 0, 3, 1, 1]
     ];
 
     let cx = 0, cy = 0;
@@ -155,7 +155,6 @@
       const visited = Array.from({ length: 5 }, () => Array(5).fill(false));
       let leak = false;
 
-      // Inlopp är uppifrån på (0,0)
       const startOpen = getOpenings(LEVEL_TYPES[0][0], rots[0][0]);
       if (!startOpen[0]) return { visited, reachedEnd: false, leak: true };
 
@@ -239,6 +238,7 @@
       if (res.reachedEnd && !res.leak) {
         fb.className = "feedback success";
         fb.textContent = "Perfekt flöde utan läckage! Går vidare...";
+        saveProgress("akt3-telefon.html", 2);
         setTimeout(() => {
           window.location.href = "akt3-telefon.html";
         }, 1000);

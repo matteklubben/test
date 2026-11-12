@@ -109,31 +109,15 @@
 
   <script src="config.js"></script>
   <script>
+    saveProgress("akt3-telefon.html", 2);
     renderHUD("Akt 3 • 3/3", 2);
 
-    // Standard mobilknappsats (2=ABC, 3=DEF, 4=GHI, 5=JKL, 6=MNO, 7=PQRS, 8=TUV, 9=WXYZ)
     // Ordet: JULGRANSGLITTER
-    // J = 5
-    // U = 88
-    // L = 555
-    // G = 4
-    // R = 777
-    // A = 2
-    // N = 66
-    // S = 7777
-    // G = 4
-    // L = 555
-    // I = 444
-    // T = 8
-    // T = 8
-    // E = 33
-    // R = 777
     const TOKENS = [
       "5", "88", "555", "4", "777", "2", "66", "7777",
       "4", "555", "444", "8", "8", "33", "777"
     ];
 
-    // Äkta DTMF-frekvenser [låg Hz, hög Hz] för varje knapp
     const DTMF_FREQS = {
       "1": [697, 1209], "2": [697, 1336], "3": [697, 1477],
       "4": [770, 1209], "5": [770, 1336], "6": [770, 1477],
@@ -215,7 +199,7 @@
 
         tokEl.classList.remove("active");
         if (i < TOKENS.length - 1) {
-          await new Promise(r => setTimeout(r, 420)); // tydlig paus mellan bokstäver
+          await new Promise(r => setTimeout(r, 420));
         }
       }
 
@@ -227,6 +211,7 @@
       const val = document.getElementById("phoneInput").value.trim().toUpperCase();
       const fb = document.getElementById("feedback");
       if (val === "JULGRANSGLITTER") {
+        saveProgress("final.html", 3);
         document.getElementById("puzzleCard").style.display = "none";
         document.getElementById("rewardCard").style.display = "block";
         document.getElementById("revealedDigit").textContent = VAULT_CONFIG.digit3;

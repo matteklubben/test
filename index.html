@@ -51,7 +51,8 @@
         </div>
       </div>
 
-      <a href="akt1-chiffer.html" class="btn btn-gold">Påbörja Akt 1 →</a>
+      <a id="mainStartBtn" href="akt1-chiffer.html" class="btn btn-gold">Starta äventyret →</a>
+      <button id="resetBtn" class="btn btn-reset-small" style="display:none;" onclick="handleReset()">↺ Nollställ framsteg och börja om</button>
     </div>
   </div>
 
@@ -63,6 +64,30 @@
       document.getElementById("introVideo").style.display = "none";
       document.getElementById("videoPlaceholder").style.display = "block";
     }
+
+    function updateStartUI() {
+      const progress = getProgress();
+      const mainBtn = document.getElementById("mainStartBtn");
+      const resetBtn = document.getElementById("resetBtn");
+
+      if (progress && progress.page && progress.page !== "index.html") {
+        mainBtn.href = progress.page;
+        mainBtn.textContent = "Fortsätt äventyret →";
+        resetBtn.style.display = "inline-flex";
+      } else {
+        mainBtn.href = "akt1-chiffer.html";
+        mainBtn.textContent = "Starta äventyret →";
+        resetBtn.style.display = "none";
+      }
+    }
+
+    function handleReset() {
+      resetProgress();
+      renderHUD("Prolog", 0);
+      updateStartUI();
+    }
+
+    updateStartUI();
   </script>
 </body>
 </html>

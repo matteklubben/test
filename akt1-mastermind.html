@@ -146,6 +146,7 @@
 
   <script src="config.js"></script>
   <script>
+    saveProgress("akt1-mastermind.html", 0);
     renderHUD("Akt 1 • 2/3", 0);
 
     const MAX_TRIES = 8;
@@ -276,6 +277,7 @@
         if (roundsWon >= 2) {
           fb.className = "feedback success";
           fb.textContent = "Båda omgångarna knäckta! Går vidare...";
+          saveProgress("akt1-morse.html", 0);
           setTimeout(() => {
             window.location.href = "akt1-morse.html";
           }, 1000);
