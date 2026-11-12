@@ -6,51 +6,87 @@
   <title>Akt 3 - Rörsystemet</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    .pipe-wrap {
+    .level-badge {
+      display: inline-block;
+      background: #1d0c13;
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+      font-size: 0.8rem;
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+    .pipe-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin: 14px 0;
+    }
+    .endpoint {
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin: 10px 0;
-    }
-    .pipe-endpoint {
-      font-size: 0.9rem;
-      font-weight: 700;
+      font-size: 0.72rem;
       color: var(--gold-light);
-      padding: 4px 12px;
-      background: #13060a;
-      border: 1px solid var(--border);
-      border-radius: 8px;
+      font-weight: bold;
+      text-align: center;
     }
     .pipe-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       gap: 4px;
-      width: 100%;
-      max-width: 310px;
-      background: #100509;
-      padding: 8px;
-      border-radius: 12px;
-      border: 2px solid var(--gold);
-      margin: 6px 0;
+      background: #110509;
+      padding: 6px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
     }
     .pipe-cell {
-      aspect-ratio: 1 / 1;
-      background: #1e0e14;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.12);
-      cursor: pointer;
+      width: 48px;
+      height: 48px;
+      background: #1d0c13;
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
     }
-    .pipe-cell.cursor {
-      outline: 3px solid #fff;
-      outline-offset: 1px;
+    .pipe-cell.connected {
+      background: #2b131d;
+      border-color: var(--gold);
+    }
+    .pipe-cell.start-cell {
+      align-self: start;
+    }
+    .pipe-cell.end-cell {
+      align-self: end;
     }
     .pipe-cell svg {
-      width: 100%;
-      height: 100%;
-      transition: transform 0.15s ease;
+      width: 38px;
+      height: 38px;
+      transition: transform 0.18s ease;
+    }
+    .pipe-line {
+      stroke: #7a5c58;
+      stroke-width: 14;
+      stroke-linecap: butt;
+      fill: none;
+    }
+    .pipe-cell.connected .pipe-line {
+      stroke: var(--gold);
+    }
+    .pipe-center {
+      fill: #7a5c58;
+    }
+    .pipe-cell.connected .pipe-center {
+      fill: var(--gold);
+    }
+    @media (max-width: 380px) {
+      .pipe-cell { width: 42px; height: 42px; }
+      .pipe-cell svg { width: 32px; height: 32px; }
     }
   </style>
 </head>
@@ -59,199 +95,235 @@
     <div id="hud" class="hud-bar"></div>
 
     <div class="card">
-      <h2>Akt 3 • Vinkällarens Rörsystem</h2>
-      <p class="muted">Rotera rören så att vinet kan rinna hela vägen från tunnan (🛢️) ner till glaset (🥂) utan läckage.</p>
+      <div id="levelBadge" class="level-badge">Bana 1 av 2 • Huvudledningen</div>
+      <h2>Akt 3 • Källarens Rörsystem</h2>
+      <p id="levelDesc" class="muted">Tryck på rören för att rotera dem. Skapa en helt sluten ledning från <strong>Tunnan (uppe t.v.)</strong> till <strong>Glaset (nere t.h.)</strong> utan några öppna läckande rörändar längs vägen.</p>
 
-      <div class="pipe-wrap">
-        <div class="pipe-endpoint" style="align-self:flex-start; margin-left:14px;">🛢️ INLOPP</div>
+      <div class="pipe-wrapper">
+        <div class="endpoint" style="align-self: flex-start; margin-top: 8px;">
+          <span>🛢️</span>
+          <span>IN →</span>
+        </div>
+
         <div id="pipeGrid" class="pipe-grid"></div>
-        <div class="pipe-endpoint" style="align-self:flex-end; margin-right:14px;">🥂 UTLOPP</div>
+
+        <div class="endpoint" style="align-self: flex-end; margin-bottom: 8px;">
+          <span>🍷</span>
+          <span>→ UT</span>
+        </div>
       </div>
 
-      <div class="dpad" aria-label="Styr rör">
-        <button class="dpad-btn dpad-up" onclick="moveCursor(0, -1)" aria-label="Upp">▲</button>
-        <button class="dpad-btn dpad-left" onclick="moveCursor(-1, 0)" aria-label="Vänster">◀</button>
-        <button class="dpad-btn dpad-center" onclick="rotateCurrent()" aria-label="Rotera">↻</button>
-        <button class="dpad-btn dpad-right" onclick="moveCursor(1, 0)" aria-label="Höger">▶</button>
-        <button class="dpad-btn dpad-down" onclick="moveCursor(0, 1)" aria-label="Ner">▼</button>
-      </div>
-
-      <button class="btn" style="margin-top:14px;" onclick="checkPipes()">Öppna kranen →</button>
+      <button id="checkBtn" class="btn" onclick="checkFlow()">Öppna ventilen →</button>
       <div id="feedback" class="feedback"></div>
     </div>
   </div>
 
   <script src="config.js"></script>
   <script>
-    saveProgress("akt3-ror.html", 2);
-    renderHUD("Akt 3 • 2/3", 2);
+    try { saveProgress("akt3-ror.html", 2); } catch (e) {}
+    try { renderHUD("Akt 3 • 2/3", 2); } catch (e) {}
 
-    // Garanterat lösbart 5x5 rörnät!
-    // Lösningens exakta slinga utan några som helst läckor:
-    // (0,0)[rot 0: Top-Bottom] -> (1,0)[rot 0: Top-Right] -> (1,1)[rot 1: Left-Right] -> (1,2)[rot 2: Bottom-Left]
-    // -> (2,2)[rot 0: Top-Bottom] -> (3,2)[rot 0: Top-Right] -> (3,3)[rot 1: Left-Right] -> (3,4)[rot 2: Bottom-Left]
-    // -> (4,4)[rot 0: Top-Bottom -> utlopp!]
-    const LEVEL_TYPES = [
-      ['I', 'L', 'I', 'L', 'L'],
-      ['L', 'I', 'L', 'I', 'L'],
-      ['L', 'I', 'I', 'L', 'I'],
-      ['I', 'L', 'L', 'I', 'L'],
-      ['L', 'I', 'L', 'I', 'I']
+    // Riktningar: 0 = Upp, 1 = Höger, 2 = Ner, 3 = Vänster
+    const DIRS = [
+      { dr: -1, dc: 0 }, // 0: Upp
+      { dr: 0, dc: 1 },  // 1: Höger
+      { dr: 1, dc: 0 },  // 2: Ner
+      { dr: 0, dc: -1 }  // 3: Vänster
     ];
+    const OPPOSITE = [2, 3, 0, 1];
 
-    // Blandade startrotationer (alltid minst 1 vridning från lösningen)
-    let rots = [
-      [1, 2, 0, 1, 3],
-      [1, 0, 1, 1, 2],
-      [3, 1, 1, 0, 0],
-      [0, 2, 2, 0, 1],
-      [1, 0, 3, 1, 1]
-    ];
+    // Grundöppningar vid rotation 0:
+    // I: Upp(0), Ner(2)
+    // L: Upp(0), Höger(1)
+    // T: Höger(1), Ner(2), Vänster(3)
+    const BASE_CONNECTIONS = {
+      I: [0, 2],
+      L: [0, 1],
+      T: [1, 2, 3]
+    };
 
-    let cx = 0, cy = 0;
-
-    function getOpenings(type, rot) {
-      // [Top, Right, Bottom, Left]
-      let base = [false, false, false, false];
-      if (type === 'I') base = [true, false, true, false];
-      if (type === 'L') base = [true, true, false, false];
-      if (type === 'T') base = [true, true, true, false];
-      if (type === 'X') base = [true, true, true, true];
-
-      const r = rot % 4;
-      return [
-        base[(4 - r) % 4],
-        base[(5 - r) % 4],
-        base[(6 - r) % 4],
-        base[(7 - r) % 4]
-      ];
-    }
-
-    function getPipeSVG(type, rot, filled) {
-      const color = filled ? "#b8294b" : "#7d6870";
-      const rim = filled ? "#f3d778" : "#4a3b41";
-      let paths = "";
-      if (type === 'I') {
-        paths = `<line x1="50" y1="0" x2="50" y2="100" stroke="${rim}" stroke-width="26"/>
-                 <line x1="50" y1="0" x2="50" y2="100" stroke="${color}" stroke-width="18"/>`;
-      } else if (type === 'L') {
-        paths = `<path d="M50,0 L50,50 L100,50" fill="none" stroke="${rim}" stroke-width="26" stroke-linejoin="round"/>
-                 <path d="M50,0 L50,50 L100,50" fill="none" stroke="${color}" stroke-width="18" stroke-linejoin="round"/>`;
-      } else if (type === 'T') {
-        paths = `<line x1="50" y1="0" x2="50" y2="100" stroke="${rim}" stroke-width="26"/>
-                 <line x1="50" y1="50" x2="100" y2="50" stroke="${rim}" stroke-width="26"/>
-                 <line x1="50" y1="0" x2="50" y2="100" stroke="${color}" stroke-width="18"/>
-                 <line x1="50" y1="50" x2="100" y2="50" stroke="${color}" stroke-width="18"/>`;
-      } else if (type === 'X') {
-        paths = `<line x1="50" y1="0" x2="50" y2="100" stroke="${rim}" stroke-width="26"/>
-                 <line x1="0" y1="50" x2="100" y2="50" stroke="${rim}" stroke-width="26"/>
-                 <line x1="50" y1="0" x2="50" y2="100" stroke="${color}" stroke-width="18"/>
-                 <line x1="0" y1="50" x2="100" y2="50" stroke="${color}" stroke-width="18"/>`;
+    // Två matematiskt verifierade banor (0 = Bana 1, 1 = Bana 2 med T-korsningar)
+    const LEVELS = [
+      {
+        badge: "Bana 1 av 2 • Huvudledningen",
+        desc: "Tryck på rören för att rotera dem. Skapa en helt sluten ledning från <strong>Tunnan (uppe t.v.)</strong> till <strong>Glaset (nere t.h.)</strong> utan några öppna läckande rörändar längs vägen.",
+        btnText: "Öppna ventil 1 →",
+        grid: [
+          [ { type: "I", rot: 0 }, { type: "L", rot: 3 }, { type: "I", rot: 1 }, { type: "L", rot: 0 }, { type: "L", rot: 1 } ],
+          [ { type: "L", rot: 2 }, { type: "L", rot: 1 }, { type: "L", rot: 0 }, { type: "I", rot: 0 }, { type: "L", rot: 3 } ],
+          [ { type: "I", rot: 1 }, { type: "L", rot: 2 }, { type: "I", rot: 1 }, { type: "L", rot: 0 }, { type: "I", rot: 0 } ],
+          [ { type: "L", rot: 0 }, { type: "L", rot: 1 }, { type: "I", rot: 0 }, { type: "L", rot: 1 }, { type: "L", rot: 2 } ],
+          [ { type: "I", rot: 0 }, { type: "L", rot: 2 }, { type: "L", rot: 3 }, { type: "I", rot: 1 }, { type: "I", rot: 0 } ]
+        ]
+      },
+      {
+        badge: "Bana 2 av 2 • Tryckkammaren (Svår)",
+        desc: "Snyggt! Nu återstår sista tryckkammaren. Här finns <strong>T-korsningar</strong> – se till att alla grenar möts i en sluten slinga så att inget vin läcker ut!",
+        btnText: "Öppna huvudventilen →",
+        grid: [
+          [ { type: "L", rot: 0 }, { type: "I", rot: 0 }, { type: "L", rot: 3 }, { type: "I", rot: 1 }, { type: "L", rot: 0 } ],
+          [ { type: "L", rot: 2 }, { type: "L", rot: 0 }, { type: "L", rot: 3 }, { type: "I", rot: 0 }, { type: "L", rot: 0 } ],
+          [ { type: "I", rot: 1 }, { type: "I", rot: 1 }, { type: "I", rot: 1 }, { type: "L", rot: 2 }, { type: "I", rot: 1 } ],
+          [ { type: "L", rot: 3 }, { type: "L", rot: 2 }, { type: "T", rot: 0 }, { type: "T", rot: 2 }, { type: "L", rot: 1 } ],
+          [ { type: "L", rot: 2 }, { type: "I", rot: 0 }, { type: "L", rot: 1 }, { type: "L", rot: 2 }, { type: "I", rot: 0 } ]
+        ]
       }
-      return `<svg viewBox="0 0 100 100" style="transform:rotate(${rot * 90}deg)">${paths}</svg>`;
+    ];
+
+    let currentLevel = 0;
+    let board = [];
+    let connectedSet = new Set();
+
+    function loadLevel(idx) {
+      currentLevel = idx;
+      const lvl = LEVELS[idx];
+      document.getElementById("levelBadge").textContent = lvl.badge;
+      document.getElementById("levelDesc").innerHTML = lvl.desc;
+      document.getElementById("checkBtn").textContent = lvl.btnText;
+      const fb = document.getElementById("feedback");
+      fb.className = "feedback";
+      fb.textContent = "";
+
+      board = lvl.grid.map(row => row.map(cell => ({ ...cell })));
+      renderGrid();
     }
 
-    function computeFlow() {
-      const visited = Array.from({ length: 5 }, () => Array(5).fill(false));
-      let leak = false;
+    function getOpenDirs(cell) {
+      return BASE_CONNECTIONS[cell.type].map(d => (d + cell.rot) % 4);
+    }
 
-      const startOpen = getOpenings(LEVEL_TYPES[0][0], rots[0][0]);
-      if (!startOpen[0]) return { visited, reachedEnd: false, leak: true };
+    function createPipeSVG(type) {
+      if (type === "I") {
+        return `<svg viewBox="0 0 100 100"><line class="pipe-line" x1="50" y1="0" x2="50" y2="100" /></svg>`;
+      }
+      if (type === "L") {
+        return `<svg viewBox="0 0 100 100">
+          <line class="pipe-line" x1="50" y1="0" x2="50" y2="50" />
+          <line class="pipe-line" x1="50" y1="50" x2="100" y2="50" />
+          <circle class="pipe-center" cx="50" cy="50" r="7" />
+        </svg>`;
+      }
+      if (type === "T") {
+        return `<svg viewBox="0 0 100 100">
+          <line class="pipe-line" x1="0" y1="50" x2="100" y2="50" />
+          <line class="pipe-line" x1="50" y1="50" x2="50" y2="100" />
+          <circle class="pipe-center" cx="50" cy="50" r="7" />
+        </svg>`;
+      }
+      return "";
+    }
 
-      const queue = [[0, 0]];
-      visited[0][0] = true;
+    function evaluateNetwork() {
+      connectedSet = new Set();
+      let leakCount = 0;
+      let reachedExit = false;
+
+      const startOpens = getOpenDirs(board[0][0]);
+      if (!startOpens.includes(3)) {
+        return { connectedSet, leakCount: 0, reachedExit: false, started: false };
+      }
+
+      const queue = [{ r: 0, c: 0, fromDir: 3 }];
+      connectedSet.add("0,0");
 
       while (queue.length > 0) {
-        const [r, c] = queue.shift();
-        const op = getOpenings(LEVEL_TYPES[r][c], rots[r][c]);
+        const { r, c } = queue.shift();
+        const opens = getOpenDirs(board[r][c]);
 
-        // Top
-        if (op[0] && !(r === 0 && c === 0)) {
-          if (r === 0) leak = true;
-          else if (!getOpenings(LEVEL_TYPES[r - 1][c], rots[r - 1][c])[2]) leak = true;
-          else if (!visited[r - 1][c]) { visited[r - 1][c] = true; queue.push([r - 1, c]); }
-        }
-        // Right
-        if (op[1]) {
-          if (c === 4) leak = true;
-          else if (!getOpenings(LEVEL_TYPES[r][c + 1], rots[r][c + 1])[3]) leak = true;
-          else if (!visited[r][c + 1]) { visited[r][c + 1] = true; queue.push([r, c + 1]); }
-        }
-        // Bottom
-        if (op[2]) {
-          if (r === 4 && c === 4) {
-            // Utlopp nere till höger!
-          } else if (r === 4) leak = true;
-          else if (!getOpenings(LEVEL_TYPES[r + 1][c], rots[r + 1][c])[0]) leak = true;
-          else if (!visited[r + 1][c]) { visited[r + 1][c] = true; queue.push([r + 1, c]); }
-        }
-        // Left
-        if (op[3]) {
-          if (c === 0) leak = true;
-          else if (!getOpenings(LEVEL_TYPES[r][c - 1], rots[r][c - 1])[1]) leak = true;
-          else if (!visited[r][c - 1]) { visited[r][c - 1] = true; queue.push([r, c - 1]); }
+        for (const d of opens) {
+          if (r === 0 && c === 0 && d === 3) continue;
+          if (r === 4 && c === 4 && d === 1) {
+            reachedExit = true;
+            continue;
+          }
+
+          const nr = r + DIRS[d].dr;
+          const nc = c + DIRS[d].dc;
+
+          if (nr < 0 || nr >= 5 || nc < 0 || nc >= 5) {
+            leakCount++;
+            continue;
+          }
+
+          const neighborOpens = getOpenDirs(board[nr][nc]);
+          if (!neighborOpens.includes(OPPOSITE[d])) {
+            leakCount++;
+            continue;
+          }
+
+          const key = `${nr},${nc}`;
+          if (!connectedSet.has(key)) {
+            connectedSet.add(key);
+            queue.push({ r: nr, c: nc, fromDir: OPPOSITE[d] });
+          }
         }
       }
 
-      const endOpen = getOpenings(LEVEL_TYPES[4][4], rots[4][4]);
-      const reachedEnd = visited[4][4] && endOpen[2];
-      return { visited, reachedEnd, leak };
+      return { connectedSet, leakCount, reachedExit, started: true };
     }
 
-    function renderGrid(showFlow = false) {
-      const grid = document.getElementById("pipeGrid");
-      grid.innerHTML = "";
-      const flow = showFlow ? computeFlow() : { visited: Array.from({ length: 5 }, () => Array(5).fill(false)) };
+    function renderGrid() {
+      const status = evaluateNetwork();
+      const gridEl = document.getElementById("pipeGrid");
+      gridEl.innerHTML = "";
 
       for (let r = 0; r < 5; r++) {
         for (let c = 0; c < 5; c++) {
-          const cell = document.createElement("div");
-          cell.className = "pipe-cell" + (r === cy && c === cx ? " cursor" : "");
-          cell.innerHTML = getPipeSVG(LEVEL_TYPES[r][c], rots[r][c], flow.visited[r][c]);
-          cell.onclick = () => {
-            cx = c;
-            cy = r;
-            rots[r][c] = (rots[r][c] + 1) % 4;
-            renderGrid(false);
+          const cellData = board[r][c];
+          const div = document.createElement("div");
+          div.className = "pipe-cell";
+          if (status.connectedSet.has(`${r},${c}`)) {
+            div.classList.add("connected");
+          }
+          div.innerHTML = createPipeSVG(cellData.type);
+          div.firstElementChild.style.transform = `rotate(${cellData.rot * 90}deg)`;
+
+          div.onclick = () => {
+            cellData.rot = (cellData.rot + 1) % 4;
+            renderGrid();
           };
-          grid.appendChild(cell);
+          gridEl.appendChild(div);
         }
       }
     }
 
-    function moveCursor(dx, dy) {
-      cx = (cx + dx + 5) % 5;
-      cy = (cy + dy + 5) % 5;
-      renderGrid(false);
-    }
-
-    function rotateCurrent() {
-      rots[cy][cx] = (rots[cy][cx] + 1) % 4;
-      renderGrid(false);
-    }
-
-    function checkPipes() {
-      const res = computeFlow();
-      renderGrid(true);
+    function checkFlow() {
       const fb = document.getElementById("feedback");
+      const status = evaluateNetwork();
 
-      if (res.reachedEnd && !res.leak) {
+      if (!status.started) {
+        fb.className = "feedback error";
+        fb.textContent = "Inloppet uppe till vänster (0,0) är inte kopplat till tunnan.";
+        return;
+      }
+      if (status.leakCount > 0) {
+        fb.className = "feedback error";
+        fb.textContent = `Systemet läcker! Det finns ${status.leakCount} öppen rörände som inte är sluten.`;
+        return;
+      }
+      if (!status.reachedExit) {
+        fb.className = "feedback error";
+        fb.textContent = "Vinet når inte fram till utloppet nere till höger ännu.";
+        return;
+      }
+
+      if (currentLevel < LEVELS.length - 1) {
         fb.className = "feedback success";
-        fb.textContent = "Perfekt flöde utan läckage! Går vidare...";
-        saveProgress("akt3-telefon.html", 2);
+        fb.textContent = "Bana 1 klarad! Laddar nästa tryckkammare...";
+        setTimeout(() => {
+          loadLevel(currentLevel + 1);
+        }, 1100);
+      } else {
+        fb.className = "feedback success";
+        fb.textContent = "Båda rörsystemen är helt täta! Vinet strömmar ner i glaset!";
+        try { saveProgress("akt3-telefon.html", 2); } catch (e) {}
         setTimeout(() => {
           window.location.href = "akt3-telefon.html";
-        }, 1000);
-      } else if (res.leak) {
-        fb.className = "feedback error";
-        fb.textContent = "Läckage i systemet! Kontrollera att inga öppna rörändar slutar i tomma intet.";
-      } else {
-        fb.className = "feedback error";
-        fb.textContent = "Vinet når inte fram till utloppet.";
+        }, 900);
       }
     }
 
-    renderGrid(false);
+    loadLevel(0);
   </script>
 </body>
 </html>
