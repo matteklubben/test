@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css" />
   <style>
     .final-video-box {
+      position: relative;
       width: 100%;
       border-radius: 12px;
       overflow: hidden;
@@ -20,6 +21,20 @@
       display: block;
       max-height: 48vh;
       object-fit: cover;
+    }
+    .unmute-overlay {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(19, 6, 10, 0.88);
+      border: 1px solid var(--gold, #d4af37);
+      color: var(--gold-light, #e6c86e);
+      font-size: 0.82rem;
+      font-weight: bold;
+      padding: 7px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      z-index: 10;
     }
     .code-display {
       display: flex;
@@ -63,7 +78,8 @@
       <p class="muted">Ni har löst alla vinkällarens gåtor. Använd koden nedan för att öppna det fysiska hänglåset:</p>
 
       <div class="final-video-box">
-        <video id="openVideo" src="open.mp4" autoplay muted loop playsinline controls></video>
+        <video id="openVideo" src="open.mp4" autoplay loop playsinline controls></video>
+        <button id="soundBtn" class="unmute-overlay" style="display: none;" onclick="enableSound()">🔊 Slå på ljud</button>
       </div>
 
       <div id="codeBox" class="code-display"></div>
@@ -74,6 +90,34 @@
 
   <script src="config.js"></script>
   <script>
+    const video = document.getElementById("openVideo");
+    const soundBtn = document.getElementById("soundBtn");
+
+    video.muted = false;
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        video.muted = true;
+        video.play();
+        soundBtn.style.display = "block";
+      });
+    }
+
+    function enableSound() {
+      video.muted = false;
+      video.play();
+      soundBtn.style.display = "none";
+    }
+
+    document.addEventListener("pointerdown", function unlockAudio() {
+      if (video.muted) {
+        video.muted = false;
+        video.play();
+        soundBtn.style.display = "none";
+      }
+      document.removeEventListener("pointerdown", unlockAudio);
+    }, { once: true });
+
     try { saveProgress("final.html", 3); } catch (e) {}
     try { renderHUD("Slutfört • 3/3", 3); } catch (e) {}
 
