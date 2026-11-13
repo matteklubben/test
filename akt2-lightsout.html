@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Akt 2 - Lights Out</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .lo-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      max-width: 310px;
+      margin: 14px auto;
+    }
+    .lo-cell {
+      aspect-ratio: 1 / 1;
+      border-radius: 12px;
+      background: #14080d;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+    }
+    .lo-cell.lit {
+      background: radial-gradient(circle, #ffe47a 10%, #d4af37 85%);
+      border-color: #fff3b0;
+      box-shadow: 0 0 16px rgba(212, 175, 55, 0.55);
+    }
+    .lo-cell.cursor {
+      outline: 3px solid #ffffff;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="hud" class="hud-bar"></div>
+
+    <div class="card">
+      <h2>Akt 2 • Ljuspusslet</h2>
+      <p class="muted">Släck samtliga lampor på brädet. Tryck direkt på rutorna eller styr med pilknapparna.</p>
+
+      <div id="loGrid" class="lo-grid"></div>
+
+      <button class="btn btn-secondary" onclick="resetBoard()" style="margin-top:12px;">↺ Återställ brädet</button>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    saveProgress("akt2-lightsout.html", 1);
+    renderHUD("Akt 2 • 1/3", 1);
+
+    const INITIAL_CLICKS = [
+      [1, 1], [3, 1], [2, 2], [1, 3], [3, 3], [0, 2], [4, 2]
+    ];
+
+    let board = [];
+    let cx = 2, cy = 2;
+
+    function toggleCell(r, c) {
+      const dirs = [[0,0], [-1,0], [1,0], [0,-1], [0,1]];
+      dirs.forEach(([dr, dc]) => {
+        const nr = r + dr;
+        const nc = c + dc;
+        if (nr >= 0 && nr < 5 && nc >= 0 && nc < 5) {
+          board[nr][nc] = !board[nr][nc];
+        }
+      });
+    }
+
+    function resetBoard() {
+      board = Array.from({ length: 5 }, () => Array(5).fill(false));
+      INITIAL_CLICKS.forEach(([r, c]) => toggleCell(r, c));
+      renderBoard();
+    }
+
+    function renderBoard() {
+      const grid = document.getElementById("loGrid");
+      grid.innerHTML = "";
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
+          const cell = document.createElement("div");
+          cell.className = "lo-cell" +
+            (board[r][c] ? " lit" : "") +
+            (r === cy && c === cx ? " cursor" : "");
+          cell.onclick = () => {
+            cx = c;
+            cy = r;
+            handlePress(r, c);
+          };
+          grid.appendChild(cell);
+        }
+      }
+    }
+
+    function moveCursor(dx, dy) {
+      cx = (cx + dx + 5) % 5;
+      cy = (cy + dy + 5) % 5;
+      renderBoard();
+    }
+
+    function pressCurrent() {
+      handlePress(cy, cx);
+    }
+
+    function handlePress(r, c) {
+      toggleCell(r, c);
+      renderBoard();
+      const allOff = board.every(row => row.every(v => !v));
+      if (allOff) {
+        saveProgress("akt2-matris.html", 1);
+        setTimeout(() => {
+          window.location.href = "akt2-matris.html";
+        }, 650);
+      }
+    }
+
+    resetBoard();
+  </script>
+</body>
+</html>
